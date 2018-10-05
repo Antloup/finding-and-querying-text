@@ -1,9 +1,6 @@
 package com.github.quadinsa5if.findingandqueryingtext.model;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 public class Vocabulary {
 
@@ -11,6 +8,16 @@ public class Vocabulary {
 
   public Vocabulary() {
     data = new TreeMap<>();
+  }
+
+  public void putEntry(String term, Entry entry) {
+    if (data.containsKey(term)) {
+      data.get(term).add(entry);
+    } else {
+      List<Entry> entries = new ArrayList<>();
+      entries.add(entry);
+      data.put(term, entries);
+    }
   }
 
 }

@@ -1,43 +1,32 @@
 package com.github.quadinsa5if.findingandqueryingtext;
 
 import com.github.quadinsa5if.findingandqueryingtext.lang.Iter;
+import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
+import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
+import com.github.quadinsa5if.findingandqueryingtext.model.Vocabulary;
 import com.github.quadinsa5if.findingandqueryingtext.tokenizer.FileTokenizer;
-import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.Optional;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class App {
 
-  static char[] PUNCTUATIONS = new char[]{'!', ',', '?', '.', ':', ';', '/', '"', '\''};
-  static String[] WHITE_SPACES = new String[]{" ", "\n", "\r\n"};
+  private static char[] ESCAPED = new char[]{
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', // Digits
+      '?', ',', '.', ';', '?', ':', '!', '\'', '"', '(', ')', '{', '}', '[', ']', '$', // Punctuation
+      '&', // Special character
+      '+', '-', '*', '%', '=' // Operators
+  };
+  private static String[] WHITE_SPACES = new String[]{" ", "\n", "\r\n"};
 
-  public static void main(String[] args) throws FileNotFoundException {
-    final FileTokenizer fileTokenizer = new FileTokenizer(PUNCTUATIONS, WHITE_SPACES);
+  private static File dataSetFolder = new File("dataset");
 
-    Instant start = Instant.now();
-
-    File article = new File("dataset/la010189");
-    Iter<String> iter = fileTokenizer.tokenize(article);
-    Optional<String> current = iter.next();
-
-    SortedMap<String, Integer> count = new TreeMap<>();
-    while (current.isPresent()) {
-      String curr = current.get().toLowerCase();
-      if (count.containsKey(curr)) {
-        count.put(curr, count.get(curr) + 1);
-      } else {
-        count.put(curr, 1);
-      }
-      current = iter.next();
-    }
-
-    System.out.println(count);
-    Instant end = Instant.now();
-    System.out.println(Duration.between(start, end).toMillis());
+  public static void main(String[] args) {
 
   }
 }
