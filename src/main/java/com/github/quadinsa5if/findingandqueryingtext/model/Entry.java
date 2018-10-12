@@ -10,4 +10,11 @@ public class Entry {
     this.score = score;
   }
 
+  @Override
+  public String toString() {
+    return "Entry{" +
+        "articleId=" + articleId +
+        ", score=" + score +
+        '}';
+  }
 }
