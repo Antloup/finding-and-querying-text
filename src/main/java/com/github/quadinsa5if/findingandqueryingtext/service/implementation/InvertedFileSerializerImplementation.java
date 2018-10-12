@@ -1,18 +1,18 @@
 package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 
-import com.github.quadinsa5if.findingandqueryingtext.model.Vocabulary;
+import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
 
 import java.io.File;
 
 public class InvertedFileSerializerImplementation implements InvertedFileSerializer {
     @Override
-    public File serialize(Vocabulary vocabulary) {
+    public File serialize(InMemoryVocabularyImpl vocabulary) {
         return null;
     }
 
     @Override
-    public Vocabulary unserialize(File file) {
+    public InMemoryVocabularyImpl unserialize(File file) {
         return null;
     }
 }

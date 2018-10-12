@@ -3,7 +3,7 @@ package com.github.quadinsa5if.findingandqueryingtext.service;
 import com.github.quadinsa5if.findingandqueryingtext.lang.Iter;
 import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
 
-public interface Prophet {
+public interface QuerySolver {
 
   /**
    * Return the top k articles where the terms have the better score
