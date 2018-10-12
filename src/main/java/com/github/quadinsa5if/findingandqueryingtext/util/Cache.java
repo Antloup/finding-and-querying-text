@@ -2,19 +2,17 @@ package com.github.quadinsa5if.findingandqueryingtext.util;
 
 import com.github.quadinsa5if.findingandqueryingtext.lang.UnsafeFunction;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 public class Cache<K, V> extends LinkedHashMap<K, V> {
 
   private final int capacity;
-  private final UnsafeFunction<K, V, Exception> fetch;
+  private final UnsafeFunction<K, V, Exception> loader;
 
-  public Cache(int capacity, UnsafeFunction<K, V, Exception> fetch) {
+  public Cache(int capacity, UnsafeFunction<K, V, Exception> loader) {
     this.capacity = capacity;
-    this.fetch = fetch;
+    this.loader = loader;
   }
 
   @Override
@@ -23,11 +21,15 @@ public class Cache<K, V> extends LinkedHashMap<K, V> {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  @Deprecated
   public V get(Object key) {
+    throw new RuntimeException("Invalid access");
+  }
+
+  public V getOrLoad(K key) {
     if (!this.containsKey(key)) {
       try {
-        put((K) key, fetch.apply((K) key));
+        put(key, loader.apply(key));
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

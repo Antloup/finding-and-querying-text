@@ -4,7 +4,7 @@ import java.util.*;
 
 public class Vocabulary {
 
-  private SortedMap<String, List<Entry>> data;
+  public SortedMap<String, List<Entry>> data;
 
   public Vocabulary() {
     data = new TreeMap<>();
