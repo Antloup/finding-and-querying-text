@@ -38,7 +38,7 @@ public class InDiskVocabularyImpl implements Vocabulary {
     reversedIndexIdentifiers = serializer.unserializeHeader(headerFile);
     cache = new Cache<>(cacheSize, term -> {
       final Optional<ReversedIndexIdentifier> postingListIdentifier = Optional.ofNullable(reversedIndexIdentifiers.get(term));
-      return postingListIdentifier.map(it -> serializer.unserializePlostingList(postingListFile, it.offset, it.length))
+      return postingListIdentifier.map(it -> serializer.unserializePostingList(postingListFile, it.offset, it.length))
           .orElse(new ArrayList<>());
     });
   }

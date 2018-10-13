@@ -27,6 +27,6 @@ public interface InvertedFileSerializer {
 
   Map<String, ReversedIndexIdentifier> unserializeHeader(File file);
 
-  List<Entry> unserializePlostingList(File file, int postingListOffset, int postingListLength);
+  List<Entry> unserializePostingList(File file, int postingListOffset, int postingListLength);
 
 }

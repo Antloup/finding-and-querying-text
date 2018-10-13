@@ -28,7 +28,7 @@ public class InvertedFileSerializerImplementation implements InvertedFileSeriali
     }
 
     @Override
-    public List<Entry> unserializePlostingList(File file, int postingListOffset, int postingListLength) {
+    public List<Entry> unserializePostingList(File file, int postingListOffset, int postingListLength) {
         return null;
     }
 }

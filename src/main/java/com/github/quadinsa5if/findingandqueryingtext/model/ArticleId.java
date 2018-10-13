@@ -12,8 +12,12 @@ public class ArticleId {
     this.path = path;
   }
 
-  public int getId() {
+  public int id() {
     return id;
+  }
+
+  public String path() {
+    return path;
   }
 
   @Override
