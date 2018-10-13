@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Optional;
 
 public interface Iter<T> extends Iterable<T> {
+
   Optional<T> next();
 
   @NotNull

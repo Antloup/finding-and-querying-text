@@ -15,17 +15,7 @@ public class FaginSolvertImpl implements QuerySolver {
   private final InMemoryVocabularyImpl vocabulary;
 
   public FaginSolvertImpl(File invertedFile) {
-    final InvertedFileSerializer serializer = new InvertedFileSerializer() {
-      @Override
-      public File serialize(InMemoryVocabularyImpl vocabulary) {
-        return null;
-      }
-
-      @Override
-      public InMemoryVocabularyImpl unserialize(File file) {
-        return null;
-      }
-    };
+    final InvertedFileSerializer serializer = new InvertedFileSerializerImplementation();
     vocabulary = serializer.unserialize(invertedFile);
   }
 

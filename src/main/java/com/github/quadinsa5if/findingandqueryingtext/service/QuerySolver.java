@@ -8,8 +8,8 @@ public interface QuerySolver {
   /**
    * Return the top k articles where the terms have the better score
    * @param terms The list of term to search
-   * @param k The number of articles to return
-   * @return An iterator other the articles
+   * @param k The number of articles to return (must be >= 0)
+   * @return An iterator other the top-k articles
    */
   Iter<ArticleId> answer(String[] terms, int k);
 

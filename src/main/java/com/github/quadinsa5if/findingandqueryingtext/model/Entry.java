@@ -10,6 +10,14 @@ public class Entry {
     this.score = score;
   }
 
+  public ArticleId articleId() {
+    return articleId;
+  }
+
+  public double score() {
+    return (double) score;
+  }
+
   @Override
   public String toString() {
     return "Entry{" +

@@ -1,5 +1,7 @@
 package com.github.quadinsa5if.findingandqueryingtext.model;
 
+import java.util.Objects;
+
 public class ArticleId {
 
   public final int id;
@@ -8,6 +10,24 @@ public class ArticleId {
   public ArticleId(int id, String path) {
     this.id = id;
     this.path = path;
+  }
+
+  public int getId() {
+    return id;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof ArticleId)) return false;
+    ArticleId articleId = (ArticleId) o;
+    return id == articleId.id &&
+        Objects.equals(path, articleId.path);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, path);
   }
 
   @Override

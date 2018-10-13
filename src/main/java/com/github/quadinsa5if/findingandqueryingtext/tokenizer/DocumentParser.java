@@ -2,7 +2,7 @@ package com.github.quadinsa5if.findingandqueryingtext.tokenizer;
 
 import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
-import com.github.quadinsa5if.findingandqueryingtext.model.Vocabulary;
+import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -28,7 +28,7 @@ public class DocumentParser {
   }
 
   public void parse(
-      Vocabulary vocabulary,
+      InMemoryVocabularyImpl vocabulary,
       char[] ignored,
       String[] delimiters
   ) throws XMLStreamException {
@@ -43,7 +43,7 @@ public class DocumentParser {
 
   private void parseArticle(
       final XMLEventReader reader,
-      Vocabulary vocabulary,
+      InMemoryVocabularyImpl vocabulary,
       char[] ignored,
       String[] delimiters
   ) throws XMLStreamException {
