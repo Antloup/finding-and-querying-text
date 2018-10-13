@@ -8,6 +8,9 @@ Remove the files readchg.txt and readmela.txt.
 Run the add_root.sh script. It's use to add a ```<ROOT>``` tag on each files as they are not well formed without that.
 
 ## Program steps
+### Class diagram
+![documentation/class_diagram.png](documentation/class_diagram.png)
+
 ### Parsing articles
 The first step of the program is to parse each articles and build a partial inverted files.
 
