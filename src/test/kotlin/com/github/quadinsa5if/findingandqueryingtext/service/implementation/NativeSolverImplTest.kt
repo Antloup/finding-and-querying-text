@@ -50,7 +50,7 @@ object NativeSolverImplTest : Spek({
   given("a native solver") {
     val solver: QuerySolver = NativeSolverImpl(postingLists)
     on("answering with parameters: terms=[\"t1\", \"t2\"], k=3") {
-      val answer = solver.answer(arrayOf("t1"), 3)
+      val answer = solver.answer(arrayOf("t1", "t2"), 3)
       val first = answer.next();
       it("first result should be some") {
         assertThat("first result is some", first.isPresent, equalTo(true))
@@ -77,6 +77,29 @@ object NativeSolverImplTest : Spek({
         assertThat("fourth result is none (empty)", fourth.isPresent, equalTo(false))
       }
     }
+
+    on("answering with parameters: terms[\"t1\"], k=2") {
+      val answer = solver.answer(arrayOf("t1"), 2)
+      val first = answer.next();
+      it("first result should be some") {
+        assertThat("first result is some", first.isPresent, equalTo(true))
+      }
+      it("first result should be d2") {
+        assertThat(d2, equalTo(first.get()))
+      }
+      val second = answer.next()
+      it("second result should be some") {
+        assertThat("second result is some", second.isPresent, equalTo(true))
+      }
+      it("second result should be d5") {
+        assertThat(d5, equalTo(second.get()))
+      }
+      val third = answer.next()
+      it("third result should be none (empty)") {
+        assertThat("third result is none (empty)", third.isPresent, equalTo(false))
+      }
+    }
+
   }
 
 })
