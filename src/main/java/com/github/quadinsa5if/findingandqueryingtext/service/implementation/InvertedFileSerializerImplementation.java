@@ -4,12 +4,14 @@ import com.github.quadinsa5if.findingandqueryingtext.exception.InvalidInvertedFi
 import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
 import com.github.quadinsa5if.findingandqueryingtext.model.ReversedIndexIdentifier;
-import com.github.quadinsa5if.findingandqueryingtext.model.Vocabulary;
+import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class InvertedFileSerializerImplementation implements InvertedFileSerializer {
 
@@ -26,7 +28,7 @@ public class InvertedFileSerializerImplementation implements InvertedFileSeriali
     }
 
     @Override
-    public File serialize(Vocabulary vocabulary) {
+    public File serialize(InMemoryVocabularyImpl vocabulary) {
         int fileNumber = 0;
         boolean exists = true;
         File ifFile = null;
@@ -38,9 +40,9 @@ public class InvertedFileSerializerImplementation implements InvertedFileSeriali
         System.out.println("File path:" + ifFile.getPath());
         try {
             //TODO : Creating/filling metadata file
-            File ofFile = new File(this.fileFolder + "/of" + fileNumber);
-            if (ofFile.createNewFile() && ifFile.createNewFile()) {
-                BufferedWriter ofbw = new BufferedWriter(new FileWriter(ofFile));
+            File hfFile = new File(this.fileFolder + "/hf" + fileNumber);
+            if (hfFile.createNewFile() && ifFile.createNewFile()) {
+                BufferedWriter hfbw = new BufferedWriter(new FileWriter(hfFile));
                 BufferedWriter ifbw = new BufferedWriter(new FileWriter(ifFile));
                 int offset = 0;
                 int length = 0;
@@ -52,11 +54,11 @@ public class InvertedFileSerializerImplementation implements InvertedFileSeriali
                         length += e.length();
                         ifbw.write(e);
                     }
-                    ofbw.write(term + ":" + offset + ":" + length + "\r\n");
+                    hfbw.write(term + ":" + offset + ":" + length + "\r\n");
                     offset += length;
                     length = 0;
                 }
-                ofbw.close();
+                hfbw.close();
                 ifbw.close();
             } else {
                 throw new InvalidInvertedFileException("Files already exists");
@@ -68,48 +70,30 @@ public class InvertedFileSerializerImplementation implements InvertedFileSeriali
         return ifFile;
     }
 
-    public Vocabulary unserialize(String scoreFile, String termFile) {
-        return this.unserialize(new File(this.fileFolder + "/" + scoreFile), new File(this.fileFolder + "/" + termFile));
+    public InMemoryVocabularyImpl unserialize(String ifPath, String hfPath) {
+        return this.unserialize(new File(this.fileFolder + "/" + ifPath), new File(this.fileFolder + "/" + hfPath));
+    }
+
+    public InMemoryVocabularyImpl unserialize(File ifFile, File hfFile) {
+        return this.unserialize(ifFile, this.unserializeHeader(hfFile));
     }
 
     @Override
-    public Vocabulary unserialize(File scoreFile, File termFile) {
-        List<ReversedIndexIdentifier> termsOffset = this.buildOffsetTerms(termFile);
-        Vocabulary vocabulary = new Vocabulary();
+    public InMemoryVocabularyImpl unserialize(File file, Map<String, ReversedIndexIdentifier> header) {
+        InMemoryVocabularyImpl vocabulary = new InMemoryVocabularyImpl();
 
-        try {
-            RandomAccessFile raf = new RandomAccessFile(scoreFile, "r");
-
-            for (ReversedIndexIdentifier termOffset : termsOffset) {
-                raf.seek(termOffset.offset);
-                byte[] bytes = new byte[termOffset.length];
-                raf.read(bytes);
-                String[] termPl = new String(bytes).split(";");
-
-                for (String term : termPl) {
-                    if ("".equals(term)) {
-                        break;
-                    }
-                    String[] score = term.split(":");
-                    if (score.length != 2) {
-                        throw new InvalidInvertedFileException("Invalid inverted file between offset " + termOffset.offset + " and " + (termOffset.offset + termOffset.length));
-                    }
-                    //TODO: Read Metadata and get ArticleId path
-                    Entry entry = new Entry(new ArticleId(Integer.valueOf(score[0]), "TODO"), Float.valueOf(score[1]));
-                    vocabulary.putEntry(termOffset.term, entry);
-                }
+        for (Map.Entry<String, ReversedIndexIdentifier> termHeader : header.entrySet()) {
+            List<Entry> entries = this.unserializePostingList(file, termHeader.getValue().offset, termHeader.getValue().length);
+            for (Entry entry : entries) {
+                vocabulary.putEntry(termHeader.getKey(), entry);
             }
-
-            raf.close();
-        } catch (IOException | InvalidInvertedFileException e) {
-            e.printStackTrace();
         }
-
         return vocabulary;
     }
 
-    private List<ReversedIndexIdentifier> buildOffsetTerms(File file) {
-        List<ReversedIndexIdentifier> termsOffset = new ArrayList<>();
+    @Override
+    public Map<String, ReversedIndexIdentifier> unserializeHeader(File file) {
+        Map<String, ReversedIndexIdentifier> header = new TreeMap<>();
         try {
             LineNumberReader reader = new LineNumberReader(new FileReader(file));
             String line;
@@ -117,15 +101,46 @@ public class InvertedFileSerializerImplementation implements InvertedFileSeriali
             while ((line = reader.readLine()) != null) {
                 String[] attributes = line.split(":");
                 if (attributes.length != 3) {
-                    throw new InvalidInvertedFileException("Invalid offset file at line " + reader.getLineNumber());
+                    throw new InvalidInvertedFileException("Invalid header file at line " + reader.getLineNumber());
                 }
-                termsOffset.add(new ReversedIndexIdentifier(attributes[0], Integer.valueOf(attributes[1]), Integer.valueOf(attributes[2])));
+                header.put(attributes[0], new ReversedIndexIdentifier(Integer.valueOf(attributes[1]), Integer.valueOf(attributes[2])));
             }
 
             reader.close();
         } catch (IOException | InvalidInvertedFileException e) {
             e.printStackTrace();
         }
-        return termsOffset;
+        return header;
+    }
+
+    @Override
+    public List<Entry> unserializePostingList(File file, int postingListOffset, int postingListLength) {
+        List<Entry> entries = new ArrayList<>();
+
+        try {
+            RandomAccessFile raf = new RandomAccessFile(file, "r");
+            raf.seek(postingListOffset);
+            byte[] bytes = new byte[postingListLength];
+            raf.read(bytes);
+            String[] termPl = new String(bytes).split(";");
+
+            for (String term : termPl) {
+                if ("".equals(term)) {
+                    break;
+                }
+                String[] score = term.split(":");
+                if (score.length != 2) {
+                    throw new InvalidInvertedFileException("Invalid inverted file between offset " + postingListOffset + " and " + (postingListOffset + postingListLength));
+                }
+                //TODO: Read Metadata and get ArticleId path
+                entries.add(new Entry(new ArticleId(Integer.valueOf(score[0]), "TODO"), Float.valueOf(score[1])));
+            }
+
+            raf.close();
+        } catch (IOException | InvalidInvertedFileException e) {
+            e.printStackTrace();
+        }
+
+        return entries;
     }
 }
