@@ -4,6 +4,8 @@ import com.github.quadinsa5if.findingandqueryingtext.exception.InvalidInvertedFi
 import com.github.quadinsa5if.findingandqueryingtext.lang.Iter;
 import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
+import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.Vocabulary;
+import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InDiskVocabularyImpl;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
 import com.github.quadinsa5if.findingandqueryingtext.service.QuerySolver;
@@ -13,11 +15,10 @@ import java.util.*;
 
 public class FaginSolvertImpl implements QuerySolver {
 
-    private final InMemoryVocabularyImpl vocabulary;
+    private final Vocabulary vocabulary;
 
-    public FaginSolvertImpl(File invertedFile, File headerFile) throws InvalidInvertedFileException {
-        final InvertedFileSerializer serializer = new InvertedFileSerializerImplementation();
-        vocabulary = serializer.unserialize(invertedFile, serializer.unserializeHeader(headerFile).unwrap()).unwrap();
+    public FaginSolvertImpl(Vocabulary vocabulary) {
+        this.vocabulary = vocabulary;
     }
 
     @Override
@@ -30,7 +31,7 @@ public class FaginSolvertImpl implements QuerySolver {
         final Map<String, List<Entry>> scoreSortEntries = new HashMap<>();
         final Map<String, Map<Integer, Entry>> randomAccessEntries = new HashMap<>();
         for (String term : terms) {
-            final List<Entry> sortedEntriesForTerm = Optional.ofNullable(vocabulary.data.get(term))
+            final List<Entry> sortedEntriesForTerm = Optional.ofNullable(vocabulary.getPostingList(term))
                     .orElse(new ArrayList<>());
             final Map<Integer, Entry> randomAccessEntriesForTerm = Optional.ofNullable(randomAccessEntries.get(term))
                     .orElse(new HashMap<>());
