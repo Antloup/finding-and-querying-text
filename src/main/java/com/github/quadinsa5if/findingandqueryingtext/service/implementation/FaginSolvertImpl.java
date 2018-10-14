@@ -17,7 +17,7 @@ public class FaginSolvertImpl implements QuerySolver {
 
     public FaginSolvertImpl(File invertedFile, File headerFile) throws InvalidInvertedFileException {
         final InvertedFileSerializer serializer = new InvertedFileSerializerImplementation();
-        vocabulary = serializer.unserialize(invertedFile, serializer.unserializeHeader(headerFile));
+        vocabulary = serializer.unserialize(invertedFile, serializer.unserializeHeader(headerFile).unwrap()).unwrap();
     }
 
     @Override

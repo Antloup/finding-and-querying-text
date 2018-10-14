@@ -6,6 +6,7 @@ import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.Vocabulary
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InDiskVocabularyImpl;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
 import com.github.quadinsa5if.findingandqueryingtext.model.ReversedIndexIdentifier;
+import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 
 import java.io.File;
 import java.util.List;
@@ -19,7 +20,7 @@ public interface InvertedFileSerializer {
      * @param vocabulary The InMemoryVocabularyImpl to serialize
      * @return The while on the disk
      */
-    File serialize(InMemoryVocabularyImpl vocabulary);
+    Result<File, Exception> serialize(InMemoryVocabularyImpl vocabulary);
 
     /**
      * Unserialize the vocabulary from a inverted file
@@ -28,11 +29,11 @@ public interface InvertedFileSerializer {
      * @param header  The offset map
      * @return The InMemoryVocabularyImpl structure
      */
-    InMemoryVocabularyImpl unserialize(File file, Map<String, ReversedIndexIdentifier> header) throws InvalidInvertedFileException;
+    Result<InMemoryVocabularyImpl, Exception> unserialize(File file, Map<String, ReversedIndexIdentifier> header) throws InvalidInvertedFileException;
 
-    Map<String, ReversedIndexIdentifier> unserializeHeader(File file);
+    Result<Map<String, ReversedIndexIdentifier>, Exception> unserializeHeader(File file);
 
-    List<Entry> unserializePostingList(File file, int postingListOffset, int postingListLength);
+    Result<List<Entry>, Exception> unserializePostingList(File file, int postingListOffset, int postingListLength);
 
 
 }

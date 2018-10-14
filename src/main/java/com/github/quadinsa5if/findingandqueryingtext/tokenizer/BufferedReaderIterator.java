@@ -32,7 +32,7 @@ public class BufferedReaderIterator implements Iter<String> {
     if (isEnded) {
       result = Optional.empty();
     } else {
-      result = Result.wrap(() -> {
+      result = Result.Try(() -> {
         char currentChar;
         do {
           currentChar = (char) reader.read();
