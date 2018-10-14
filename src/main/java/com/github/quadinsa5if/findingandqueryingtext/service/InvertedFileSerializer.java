@@ -1,5 +1,7 @@
 package com.github.quadinsa5if.findingandqueryingtext.service;
 
+import com.github.quadinsa5if.findingandqueryingtext.exception.InvalidInvertedFileException;
+import com.github.quadinsa5if.findingandqueryingtext.model.Vocabulary;
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.Vocabulary;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
@@ -20,13 +22,22 @@ public interface InvertedFileSerializer {
 
   /**
    * Unserialize the vocabulary from a inverted file
-   * @param file The inverted file
-   * @return The InMemoryVocabularyImpl structure
+   * @param scoreFile The inverted file
+   * @param termFile The offset file
+   * @return The Vocabulary structure
    */
-  InMemoryVocabularyImpl unserialize(File file);
+  Vocabulary unserialize(File scoreFile, File termFile) throws InvalidInvertedFileException;
 
-  Map<String, ReversedIndexIdentifier> unserializeHeader(File file);
+    /**
+     * Unserialize the vocabulary from a inverted file
+     * @param file The inverted file
+     * @return The InMemoryVocabularyImpl structure
+     */
+    InMemoryVocabularyImpl unserialize(File file);
 
-  List<Entry> unserializePostingList(File file, int postingListOffset, int postingListLength);
+    Map<String, ReversedIndexIdentifier> unserializeHeader(File file);
+
+    List<Entry> unserializePostingList(File file, int postingListOffset, int postingListLength);
+
 
 }
