@@ -3,6 +3,7 @@ package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
+import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
 import com.github.quadinsa5if.findingandqueryingtext.tokenizer.DocumentParser;
 
 import javax.xml.stream.XMLStreamException;
@@ -30,15 +31,21 @@ public abstract class AbstractScorerImplementation {
 
     protected int batchSize;
     protected int currentIndexInBatch;
+    protected InvertedFileSerializer serializer;
 
     public abstract int getTotalPassNumber();
+
     public abstract void onArticleParseStart();
+
     public abstract void onTermRead(String word);
+
     public abstract void onArticleParseEnd(ArticleId articleId);
+
     public abstract void onPassEnd();
-    
-    public AbstractScorerImplementation(File dataSetFolder) {
+
+    public AbstractScorerImplementation(File dataSetFolder, InvertedFileSerializer serializer) {
         this.currentPassNumber = 1;
+        this.serializer = serializer;
         vocabulary = new InMemoryVocabularyImpl();
         dataSetFiles = dataSetFolder.listFiles();
     }
@@ -46,7 +53,7 @@ public abstract class AbstractScorerImplementation {
     protected void setScore(String term, ArticleId articleId, float score) {
         vocabulary.putEntry(term, new Entry(articleId, score));
     }
-    
+
     public InMemoryVocabularyImpl getVocabulary() {
         return vocabulary;
     }
@@ -83,6 +90,7 @@ public abstract class AbstractScorerImplementation {
     }
 
     private void serializeVocabulary() {
-        //todo: serialization, to be discussed
+        this.serializer.serialize(this.vocabulary);
+        this.vocabulary = new InMemoryVocabularyImpl();
     }
 }
