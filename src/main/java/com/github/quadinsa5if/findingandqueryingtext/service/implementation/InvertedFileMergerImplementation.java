@@ -80,13 +80,12 @@ public class InvertedFileMergerImplementation implements InvertedFileMerger {
             this.previous_offset=new_val.offset;
             this.previous_total_length=new_val.length;
 
-            for (int i = 0; i<=iterators_pool.size(); i++){
-                if(mins_indexes.contains(i)){
+            //for (int i = 0; i<=iterators_pool.size(); i++){
+            for (int i : mins_indexes){
                     FileIterator iterator = this.iterators_pool.get(i);
                     String s = iterator.next();
                     ReversedIndexIdentifier v = this.triplet_builder(s);
                     this.triplets.set(i,v);
-                }
             }
         } catch (Exception e) {
             e.printStackTrace();
