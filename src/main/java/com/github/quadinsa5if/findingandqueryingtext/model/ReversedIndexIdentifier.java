@@ -4,11 +4,12 @@ public class ReversedIndexIdentifier {
 
   public final int offset;
   public final int length;
-  public String term="";
+  public final String term;
 
   public ReversedIndexIdentifier(int offset, int length) {
     this.offset = offset;
     this.length = length;
+    this.term = "";
   }
   public ReversedIndexIdentifier(int offset, int length, String term) {
     this.offset = offset;

@@ -23,6 +23,7 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile 'org.jsoup:jsoup:1.11.3'
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
 
     // Test
     compile 'com.natpryce:hamkrest:1.6.0.0'

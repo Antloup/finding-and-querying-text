@@ -2,13 +2,12 @@ package com.github.quadinsa5if.findingandqueryingtext.service;
 
 import com.github.quadinsa5if.findingandqueryingtext.exception.InvalidInvertedFileException;
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
-import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.Vocabulary;
-import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InDiskVocabularyImpl;
-import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
+import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile;
 import com.github.quadinsa5if.findingandqueryingtext.model.ReversedIndexIdentifier;
+import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 
-import java.io.File;
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +19,7 @@ public interface InvertedFileSerializer {
      * @param vocabulary The InMemoryVocabularyImpl to serialize
      * @return The while on the disk
      */
-    Result<File, Exception> serialize(InMemoryVocabularyImpl vocabulary);
+    Result<HeaderAndInvertedFile, Exception> serialize(InMemoryVocabularyImpl vocabulary);
 
     /**
      * Unserialize the vocabulary from a inverted file
@@ -29,11 +28,11 @@ public interface InvertedFileSerializer {
      * @param header  The offset map
      * @return The InMemoryVocabularyImpl structure
      */
-    Result<InMemoryVocabularyImpl, Exception> unserialize(File file, Map<String, ReversedIndexIdentifier> header) throws InvalidInvertedFileException;
+    Result<InMemoryVocabularyImpl, IOException> unserialize(RandomAccessFile file, Map<String, ReversedIndexIdentifier> header);
 
-    Result<Map<String, ReversedIndexIdentifier>, Exception> unserializeHeader(File file);
+    Result<Map<String, ReversedIndexIdentifier>, IOException> unserializeHeader(FileReader reader);
 
-    Result<List<Entry>, Exception> unserializePostingList(File file, int postingListOffset, int postingListLength);
+    Result<List<Entry>, IOException> unserializePostingList(RandomAccessFile reader, int postingListOffset, int postingListLength);
 
 
 }

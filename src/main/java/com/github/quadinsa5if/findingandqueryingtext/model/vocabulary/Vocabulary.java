@@ -13,5 +13,11 @@ public interface Vocabulary {
    */
   List<Entry> getPostingList(String term);
 
+  /**
+   * Return the list of terms that belongs to the vocabulary
+   * @return The list of terms of the vocabulary
+   */
+  List<String> getTerms();
+
 
 }

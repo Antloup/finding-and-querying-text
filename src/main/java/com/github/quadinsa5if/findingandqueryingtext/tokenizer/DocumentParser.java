@@ -1,7 +1,6 @@
 package com.github.quadinsa5if.findingandqueryingtext.tokenizer;
 
 import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
-import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.AbstractScorerImplementation;
 
 import javax.xml.stream.XMLEventReader;
@@ -12,13 +11,14 @@ import javax.xml.stream.events.XMLEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DocumentParser {
 
     private static final String DOCUMENT_ID = "DOCID";
     private static final String DOCUMENT = "DOC";
-    private static final String HEADER = "HEADLINE";
+    //  private static final String HEADER = "HEADLINE";
     private static final String PARAGRAPH = "P";
 
     private final XMLEventReader reader;
@@ -30,20 +30,18 @@ public class DocumentParser {
     }
 
     public void parse(
-            InMemoryVocabularyImpl vocabulary,
             char[] ignored,
             String[] delimiters) throws XMLStreamException {
         while (reader.hasNext()) {
             final XMLEvent event = reader.nextEvent();
             if (event.isStartElement() && event.asStartElement().getName().getLocalPart().equals(DOCUMENT)) {
-                parseArticle(reader, vocabulary, ignored, delimiters);
+                parseArticle(reader, ignored, delimiters);
             }
         }
     }
 
     private void parseArticle(
             final XMLEventReader reader,
-            InMemoryVocabularyImpl vocabulary,
             char[] ignored,
             String[] delimiters
     ) throws XMLStreamException {
@@ -67,6 +65,8 @@ public class DocumentParser {
                         for (String word : split(reader.getElementText(), ignored, delimiters)) {
                             scorer.onTermRead(word);
                         }
+                        break;
+                    default:
                         break;
                 }
             }

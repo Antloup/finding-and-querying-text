@@ -7,14 +7,16 @@ import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSeriali
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.InvertedFileSerializerImplementation;
 import com.github.quadinsa5if.findingandqueryingtext.util.Cache;
 
-import java.io.File;
+import java.io.FileReader;
+import java.io.LineNumberReader;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 /**
- * Vocabulary recorded on the disk (not in the RAM)
+ * vocabulary recorded on the disk (not in the RAM)
  */
 public class InDiskVocabularyImpl implements Vocabulary {
 
@@ -33,7 +35,7 @@ public class InDiskVocabularyImpl implements Vocabulary {
    */
   private final InvertedFileSerializer serializer;
 
-  public InDiskVocabularyImpl(final File headerFile, final File postingListFile, int cacheSize) {
+  public InDiskVocabularyImpl(final FileReader headerFile, final RandomAccessFile postingListFile, int cacheSize) {
     serializer = new InvertedFileSerializerImplementation();
     reversedIndexIdentifiers = serializer.unserializeHeader(headerFile).unwrap();
     cache = new Cache<>(cacheSize, term -> {
@@ -48,4 +50,8 @@ public class InDiskVocabularyImpl implements Vocabulary {
     return cache.getOrLoad(term);
   }
 
+  @Override
+  public List<String> getTerms() {
+    return new ArrayList<>(reversedIndexIdentifiers.keySet());
+  }
 }

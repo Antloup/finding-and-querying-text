@@ -23,15 +23,11 @@ public abstract class AbstractScorerImplementation {
 
     private InMemoryVocabularyImpl vocabulary;
 
-    protected int currentPassNumber;
+    int currentPassNumber;
 
-    protected int getCurrentPassNumber() {
-        return this.currentPassNumber;
-    }
-
-    protected int batchSize;
-    protected int currentIndexInBatch;
-    protected InvertedFileSerializer serializer;
+    private int batchSize;
+    private int currentIndexInBatch;
+    private InvertedFileSerializer serializer;
 
     public abstract int getTotalPassNumber();
 
@@ -43,14 +39,14 @@ public abstract class AbstractScorerImplementation {
 
     public abstract void onPassEnd();
 
-    public AbstractScorerImplementation(File dataSetFolder, InvertedFileSerializer serializer) {
+    AbstractScorerImplementation(File dataSetFolder, InvertedFileSerializer serializer) {
         this.currentPassNumber = 1;
         this.serializer = serializer;
         vocabulary = new InMemoryVocabularyImpl();
         dataSetFiles = dataSetFolder.listFiles();
     }
 
-    protected void setScore(String term, ArticleId articleId, float score) {
+    void setScore(String term, ArticleId articleId, float score) {
         vocabulary.putEntry(term, new Entry(articleId, score));
     }
 
@@ -67,11 +63,9 @@ public abstract class AbstractScorerImplementation {
                 if (file.isFile()) {
                     try {
                         DocumentParser documentParser = new DocumentParser(file, this);
-                        documentParser.parse(vocabulary, ESCAPED, WHITE_SPACES);
-                    } catch (XMLStreamException e) {
-                        e.printStackTrace();
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
+                        documentParser.parse(ESCAPED, WHITE_SPACES);
+                    } catch (XMLStreamException | FileNotFoundException e) {
+                        throw new RuntimeException(e);
                     }
                 }
             }
@@ -79,7 +73,7 @@ public abstract class AbstractScorerImplementation {
         }
     }
 
-    protected void finalizeToScoreArticle() {
+    void finalizeToScoreArticle() {
         currentIndexInBatch++;
 
         if (currentIndexInBatch == batchSize) {
@@ -90,7 +84,7 @@ public abstract class AbstractScorerImplementation {
     }
 
     private void serializeVocabulary() {
-        this.serializer.serialize(this.vocabulary);
-        this.vocabulary = new InMemoryVocabularyImpl();
+        serializer.serialize(vocabulary);
+        vocabulary = new InMemoryVocabularyImpl();
     }
 }

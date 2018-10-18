@@ -10,8 +10,7 @@ import java.util.*;
  */
 public class InMemoryVocabularyImpl implements MutableVocabulary {
 
-  // Todo: set data as private
-  public SortedMap<String, List<Entry>> data;
+  private SortedMap<String, List<Entry>> data;
 
   public InMemoryVocabularyImpl() {
     data = new TreeMap<>();
@@ -31,4 +30,8 @@ public class InMemoryVocabularyImpl implements MutableVocabulary {
     return Optional.of(data.get(term)).orElse(new ArrayList<>());
   }
 
+  @Override
+  public List<String> getTerms() {
+    return new ArrayList<>(data.keySet());
+  }
 }

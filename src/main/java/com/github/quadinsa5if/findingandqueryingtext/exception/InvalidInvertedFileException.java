@@ -1,6 +1,8 @@
 package com.github.quadinsa5if.findingandqueryingtext.exception;
 
-public class InvalidInvertedFileException extends Exception {
+import java.io.IOException;
+
+public class InvalidInvertedFileException extends IOException {
     public InvalidInvertedFileException(String message) {
         super("Inverted file exception : " + message);
     }

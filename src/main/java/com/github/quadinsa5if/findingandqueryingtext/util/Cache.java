@@ -4,13 +4,14 @@ import com.github.quadinsa5if.findingandqueryingtext.lang.UnsafeFunction;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public class Cache<K, V> extends LinkedHashMap<K, V> {
 
   private final int capacity;
-  private final UnsafeFunction<K, V, Exception> loader;
+  transient private final Function<K, V> loader;
 
-  public Cache(int capacity, UnsafeFunction<K, V, Exception> loader) {
+  public Cache(int capacity, Function<K, V> loader) {
     this.capacity = capacity;
     this.loader = loader;
   }
