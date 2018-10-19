@@ -32,4 +32,13 @@ public interface IO<T> {
         }
     }
 
+    default <R> IO<R> then(IO<R> otherIo) {
+        final IO self = this;
+        return () -> {
+            self.sync();
+            return otherIo.sync();
+        };
+    }
+
+
 }
