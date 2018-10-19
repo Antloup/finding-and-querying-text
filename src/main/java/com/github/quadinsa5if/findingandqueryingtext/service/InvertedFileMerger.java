@@ -1,5 +1,7 @@
 package com.github.quadinsa5if.findingandqueryingtext.service;
 
+import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile;
+
 import java.io.File;
 import java.util.List;
 
@@ -10,6 +12,6 @@ public interface InvertedFileMerger {
    * @param parts The parts list
    * @return The merged file
    */
-  File merge(List<File> parts);
+  HeaderAndInvertedFile merge(Iterable<HeaderAndInvertedFile> parts, HeaderAndInvertedFile headerAndInvertedFile);
 
 }

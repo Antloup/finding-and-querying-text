@@ -19,5 +19,4 @@ public interface Vocabulary {
    */
   List<String> getTerms();
 
-
 }

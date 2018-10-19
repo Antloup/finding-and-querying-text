@@ -12,10 +12,7 @@ import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class InvertedFileSerializerImplementation implements InvertedFileSerializer {
 
@@ -40,6 +37,10 @@ public class InvertedFileSerializerImplementation implements InvertedFileSeriali
     @Override
     public Result<HeaderAndInvertedFile, Exception> serialize(InMemoryVocabularyImpl vocabulary) {
         int fileNumber = 0;
+        final File directory = new File(fileFolder);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
         File ifFile = new File(fileFolder + INVERTED_FILE + fileNumber);
         File hfFile = new File(fileFolder + HEADER_FILE + fileNumber);
         while (ifFile.exists() || hfFile.exists()) {
@@ -47,9 +48,6 @@ public class InvertedFileSerializerImplementation implements InvertedFileSeriali
             ifFile = new File(fileFolder + INVERTED_FILE + fileNumber);
             hfFile = new File(fileFolder + HEADER_FILE + fileNumber);
         }
-        System.out.println("[InvertedFile]\t File path:" + ifFile.getPath());
-        System.out.println("[HeadeFile]\t File path:" + hfFile.getPath());
-
         final File ifValidFile = ifFile;
         final File hfValidFile = hfFile;
         return Result.Try(() -> {
@@ -60,9 +58,7 @@ public class InvertedFileSerializerImplementation implements InvertedFileSeriali
                 int offset = 0;
                 int length = 0;
                 for (String term : vocabulary.getTerms()) {
-                    System.out.println(term);
                     for (Entry entry : vocabulary.getPostingList(term)) {
-                        System.out.println(entry);
                         strBuilder.setLength(0); // Clear buffer
                         strBuilder.append(entry.articleId.id)
                                 .append(PARTS_DELIMITER)
@@ -93,47 +89,42 @@ public class InvertedFileSerializerImplementation implements InvertedFileSeriali
     }
 
     @Override
-    public Result<InMemoryVocabularyImpl, IOException> unserialize(RandomAccessFile file, Map<String, ReversedIndexIdentifier> header) {
-        final IO<InMemoryVocabularyImpl> io = () -> {
+    public IO<InMemoryVocabularyImpl> unserialize(RandomAccessFile file, Map<String, ReversedIndexIdentifier> header) {
+        return () -> {
             InMemoryVocabularyImpl vocabulary = new InMemoryVocabularyImpl();
-
             for (Map.Entry<String, ReversedIndexIdentifier> termHeader : header.entrySet()) {
-                Result<List<Entry>, IOException> entries = unserializePostingList(file, termHeader.getValue().offset, termHeader.getValue().length);
-                if (entries.err().isPresent()) {
-                    throw entries.err().get();
-                }
-                for (Entry entry : entries.unwrap()) {
-                    vocabulary.putEntry(termHeader.getKey(), entry);
-                }
+                IO<List<Entry>> entries = unserializePostingList(file, termHeader.getValue().offset, termHeader.getValue().length);
+                entries.map(it -> {
+                    for(Entry entry : it) {
+                        vocabulary.putEntry(termHeader.getKey(), entry);
+                    }
+                    return 0;
+                }).sync();
             }
             return vocabulary;
         };
-        return io.attempt();
     }
 
     @Override
-    public Result<Map<String, ReversedIndexIdentifier>, IOException> unserializeHeader(FileReader reader) {
-        final IO<Map<String, ReversedIndexIdentifier>> io = () -> {
-            Map<String, ReversedIndexIdentifier> header = new TreeMap<>();
-
+    public IO<SortedMap<String, ReversedIndexIdentifier>> unserializeHeader(FileReader reader) {
+        return () -> {
+            SortedMap<String, ReversedIndexIdentifier> header = new TreeMap<>();
             String line;
             final LineNumberReader lineReader = new LineNumberReader(reader);
             while ((line = lineReader.readLine()) != null) {
                 String[] attributes = line.split(String.valueOf(PARTS_DELIMITER));
                 if (attributes.length != 3) {
-                    throw new IOException("Invalid header file at line " + lineReader.getLineNumber());
+                    throw new InvalidInvertedFileException("Invalid header file at line " + lineReader.getLineNumber());
                 }
                 header.put(attributes[0], new ReversedIndexIdentifier(Integer.valueOf(attributes[1]), Integer.valueOf(attributes[2])));
             }
-
             return header;
         };
-        return io.attempt();
     }
 
     @Override
-    public Result<List<Entry>, IOException> unserializePostingList(RandomAccessFile reader, int postingListOffset, int postingListLength) {
-        final IO<List<Entry>> io = () -> {
+    public IO<List<Entry>> unserializePostingList(RandomAccessFile reader, int postingListOffset, int postingListLength) {
+        return () -> {
             List<Entry> entries = new ArrayList<>();
 
             reader.seek(postingListOffset);
@@ -152,9 +143,7 @@ public class InvertedFileSerializerImplementation implements InvertedFileSeriali
                 //TODO: Call Metadata service
                 entries.add(new Entry(new ArticleId(Integer.valueOf(score[0])), Float.valueOf(score[1])));
             }
-            reader.close();
             return entries;
         };
-        return io.attempt();
     }
 }
