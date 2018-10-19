@@ -119,7 +119,7 @@ public class InvertedFileSerializerImplementation implements InvertedFileSeriali
             String line;
             final LineNumberReader lineReader = new LineNumberReader(reader);
             while ((line = lineReader.readLine()) != null) {
-                String[] attributes = line.split(":");
+                String[] attributes = line.split(String.valueOf(PARTS_DELIMITER));
                 if (attributes.length != 3) {
                     throw new IOException("Invalid header file at line " + lineReader.getLineNumber());
                 }
@@ -139,7 +139,7 @@ public class InvertedFileSerializerImplementation implements InvertedFileSeriali
             reader.seek(postingListOffset);
             byte[] bytes = new byte[postingListLength];
             reader.read(bytes);
-            String[] termPl = new String(bytes).split(";");
+            String[] termPl = new String(bytes).split(String.valueOf(IDENTIFIERS_DELIMITER));
 
             for (String term : termPl) {
                 if ("".equals(term)) {
@@ -149,8 +149,8 @@ public class InvertedFileSerializerImplementation implements InvertedFileSeriali
                 if (score.length != 2) {
                     throw new InvalidInvertedFileException("Invalid inverted file between offset " + postingListOffset + " and " + (postingListOffset + postingListLength));
                 }
-                //TODO: Read Metadata and get ArticleId path
-                entries.add(new Entry(new ArticleId(Integer.valueOf(score[0]), "TODO"), Float.valueOf(score[1])));
+                //TODO: Call Metadata service
+                entries.add(new Entry(new ArticleId(Integer.valueOf(score[0])), Float.valueOf(score[1])));
             }
             reader.close();
             return entries;
