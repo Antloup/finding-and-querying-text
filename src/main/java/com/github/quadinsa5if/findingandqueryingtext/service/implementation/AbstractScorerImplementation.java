@@ -2,14 +2,17 @@ package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 
 import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
+import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
 import com.github.quadinsa5if.findingandqueryingtext.tokenizer.DocumentParser;
+import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,6 +35,7 @@ public abstract class AbstractScorerImplementation {
     private int batchSize;
     private int currentIndexInBatch;
     private InvertedFileSerializer serializer;
+    private final List<HeaderAndInvertedFile> outputs = new ArrayList<>();
 
     public abstract int getTotalPassNumber();
 
@@ -59,7 +63,7 @@ public abstract class AbstractScorerImplementation {
         return vocabulary;
     }
 
-    public void evaluate(int batchSize) {
+    public List<HeaderAndInvertedFile> evaluate(int batchSize) {
         this.currentIndexInBatch = 0;
         this.batchSize = batchSize;
 
@@ -76,6 +80,12 @@ public abstract class AbstractScorerImplementation {
             }
             this.onPassEnd();
         }
+
+        if(vocabulary.isEmpty()) {
+            finalizeToScoreArticle();
+        }
+
+        return outputs;
     }
 
     void finalizeToScoreArticle() {
@@ -87,7 +97,12 @@ public abstract class AbstractScorerImplementation {
     }
 
     private void serializeVocabulary() {
-        serializer.serialize(vocabulary);
+        Result<HeaderAndInvertedFile, Exception> result = serializer.serialize(vocabulary);
+        outputs.add(result.ok().get());
+        resetVocabulary();
+    }
+
+    private void resetVocabulary() {
         vocabulary = new InMemoryVocabularyImpl();
     }
 }

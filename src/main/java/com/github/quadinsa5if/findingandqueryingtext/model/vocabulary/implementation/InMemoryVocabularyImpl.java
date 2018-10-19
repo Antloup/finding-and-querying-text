@@ -26,6 +26,10 @@ public class InMemoryVocabularyImpl implements MutableVocabulary {
     }
   }
 
+  public boolean isEmpty() {
+    return data.keySet().size() == 0;
+  }
+
   public List<Entry> getPostingList(String term) {
     return Optional.of(data.get(term)).orElse(new ArrayList<>());
   }

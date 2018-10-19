@@ -1,10 +1,13 @@
 package com.github.quadinsa5if.findingandqueryingtext;
 
 import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
+import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.Vocabulary;
-import com.github.quadinsa5if.findingandqueryingtext.service.implementation.IdfTfScorerImplementation;
-import com.github.quadinsa5if.findingandqueryingtext.service.implementation.AbstractScorerImplementation;
-import com.github.quadinsa5if.findingandqueryingtext.service.implementation.InvertedFileSerializerImplementation;
+import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InDiskVocabularyImpl;
+import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileMerger;
+import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
+import com.github.quadinsa5if.findingandqueryingtext.service.QuerySolver;
+import com.github.quadinsa5if.findingandqueryingtext.service.implementation.*;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 import org.apache.commons.cli.*;
 
@@ -113,10 +116,13 @@ public class App {
         }
     }
 
-    private static void buildInvertedFile(Stream<Path> articlesFolder, File outputFile) {
-        AbstractScorerImplementation scorer = new IdfTfScorerImplementation(articlesFolder, new InvertedFileSerializerImplementation());
-        scorer.evaluate(1);
-        Vocabulary vocabulary = scorer.getVocabulary();
+    private static HeaderAndInvertedFile buildInvertedFile(Stream<Path> articlesFolder, File outputFile) {
+        final InvertedFileSerializer serializer = new InvertedFileSerializerImplementation();
+        AbstractScorerImplementation scorer = new IdfTfScorerImplementation(articlesFolder, serializer);
+        List<HeaderAndInvertedFile> partitions = scorer.evaluate(1);
+        final InvertedFileMerger merger = new InvertedFileMergerImplementation(serializer);
+        final HeaderAndInvertedFile complete = merger.merge(partitions, new HeaderAndInvertedFile(new File(outputFile + "_header"), new File(outputFile + "_posting_lists")));
+        return complete;
     }
 
     public static void dev() {
