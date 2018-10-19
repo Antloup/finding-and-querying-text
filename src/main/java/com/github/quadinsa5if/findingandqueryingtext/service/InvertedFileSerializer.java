@@ -2,6 +2,8 @@ package com.github.quadinsa5if.findingandqueryingtext.service;
 
 import com.github.quadinsa5if.findingandqueryingtext.exception.InvalidInvertedFileException;
 import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
+import com.github.quadinsa5if.findingandqueryingtext.lang.Pair;
+import com.github.quadinsa5if.findingandqueryingtext.lang.Unit;
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
 import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile;
 import com.github.quadinsa5if.findingandqueryingtext.model.ReversedIndexIdentifier;
@@ -22,6 +24,9 @@ public interface InvertedFileSerializer {
      * @return The while on the disk
      */
     Result<HeaderAndInvertedFile, Exception> serialize(InMemoryVocabularyImpl vocabulary);
+
+    IO<Integer> writeEntries(List<Entry> entries, BufferedWriter writer);
+    IO<Unit> writeReversedIndexIdentifier(List<Pair<String, ReversedIndexIdentifier>> reversedIndexIdentifiers, BufferedWriter writer);
 
     /**
      * Unserialize the vocabulary from a inverted file

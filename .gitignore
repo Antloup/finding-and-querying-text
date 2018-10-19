@@ -32,3 +32,6 @@ gradle
 
 # Ignore dataset folder
 dataset
+build/
+fileTest/
+test_folder_inverted_file_serializer/
