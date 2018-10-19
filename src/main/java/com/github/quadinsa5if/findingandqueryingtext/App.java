@@ -1,12 +1,20 @@
 package com.github.quadinsa5if.findingandqueryingtext;
 
+import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.Vocabulary;
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.IdfTfScorerImplementation;
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.AbstractScorerImplementation;
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.InvertedFileSerializerImplementation;
+import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 import org.apache.commons.cli.*;
 
-import java.io.File;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class App {
 
@@ -74,7 +82,7 @@ public class App {
         final CommandLineParser commandLineParser = new DefaultParser();
         try {
             CommandLine commandLine = commandLineParser.parse(options, args);
-            final File dataFolder = new File(commandLine.getOptionValue(articleFolder.getOpt()));
+            final IO<Stream<Path>> dataFolder = listFiles(commandLine.getOptionValue(articleFolder.getOpt()));
             final File outputFileName = new File(commandLine.getOptionValue(ouputFile.getOpt()));
 
             final boolean buildIndex = commandLine.hasOption(buildInvertedFile.getOpt());
@@ -83,12 +91,17 @@ public class App {
             final boolean runTests = commandLine.hasOption(test.getOpt());
 
             if (buildIndex) {
-                buildInvertedFile(dataFolder, outputFileName);
+                dataFolder.map(folder -> {
+                    buildInvertedFile(folder, outputFileName);
+                    return 0;
+                }).sync();
             }
             if (hasQuery) {
+                System.out.println("Running query");
                 // Todo: perform query
             }
             if (runTests) {
+                System.out.println("Runnin tests");
                 // Todo: test build (gradle)
             }
 
@@ -100,10 +113,34 @@ public class App {
         }
     }
 
-    private static void buildInvertedFile(File articlesFolder, File outputFile) {
+    private static void buildInvertedFile(Stream<Path> articlesFolder, File outputFile) {
         AbstractScorerImplementation scorer = new IdfTfScorerImplementation(articlesFolder, new InvertedFileSerializerImplementation());
         scorer.evaluate(1);
         Vocabulary vocabulary = scorer.getVocabulary();
+    }
+
+    public static void dev() {
+
+    }
+
+    static Result<FileReader, FileNotFoundException> open(String filePath) {
+        try {
+            return Result.ok(new FileReader(new File(filePath)));
+        } catch (FileNotFoundException e) {
+            return Result.err(e);
+        }
+    }
+
+    static Result<RandomAccessFile, FileNotFoundException> openRandom(String filePath) {
+        try {
+            return Result.ok(new RandomAccessFile(new File(filePath), "r"));
+        } catch (FileNotFoundException e) {
+            return Result.err(e);
+        }
+    }
+
+    static IO<Stream<Path>> listFiles(String path) {
+        return () -> Files.list(Paths.get(path));
     }
 
 }

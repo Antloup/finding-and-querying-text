@@ -12,14 +12,6 @@ public class ArticleId {
     this.path = path;
   }
 
-  public int id() {
-    return id;
-  }
-
-  public String path() {
-    return path;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

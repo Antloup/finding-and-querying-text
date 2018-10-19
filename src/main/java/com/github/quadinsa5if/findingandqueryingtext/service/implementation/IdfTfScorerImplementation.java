@@ -4,8 +4,10 @@ import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class IdfTfScorerImplementation extends AbstractScorerImplementation {
 
@@ -14,7 +16,7 @@ public class IdfTfScorerImplementation extends AbstractScorerImplementation {
     private Map<String, Double> idf;
     private int numberOfArticles;
 
-    public IdfTfScorerImplementation(File dataSetFolder, InvertedFileSerializer serializer) {
+    public IdfTfScorerImplementation(Stream<Path> dataSetFolder, InvertedFileSerializer serializer) {
         super(dataSetFolder, serializer);
 
         numberOfArticles = 0;

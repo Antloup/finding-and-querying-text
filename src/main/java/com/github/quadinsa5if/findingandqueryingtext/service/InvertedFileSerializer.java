@@ -1,6 +1,7 @@
 package com.github.quadinsa5if.findingandqueryingtext.service;
 
 import com.github.quadinsa5if.findingandqueryingtext.exception.InvalidInvertedFileException;
+import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
 import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile;
 import com.github.quadinsa5if.findingandqueryingtext.model.ReversedIndexIdentifier;
@@ -10,6 +11,7 @@ import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 import java.io.*;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 
 public interface InvertedFileSerializer {
 
@@ -28,11 +30,11 @@ public interface InvertedFileSerializer {
      * @param header  The offset map
      * @return The InMemoryVocabularyImpl structure
      */
-    Result<InMemoryVocabularyImpl, IOException> unserialize(RandomAccessFile file, Map<String, ReversedIndexIdentifier> header);
+    IO<InMemoryVocabularyImpl> unserialize(RandomAccessFile file, Map<String, ReversedIndexIdentifier> header);
 
-    Result<Map<String, ReversedIndexIdentifier>, IOException> unserializeHeader(FileReader reader);
+    IO<SortedMap<String, ReversedIndexIdentifier>> unserializeHeader(FileReader reader);
 
-    Result<List<Entry>, IOException> unserializePostingList(RandomAccessFile reader, int postingListOffset, int postingListLength);
+    IO<List<Entry>> unserializePostingList(RandomAccessFile reader, int postingListOffset, int postingListLength);
 
 
 }

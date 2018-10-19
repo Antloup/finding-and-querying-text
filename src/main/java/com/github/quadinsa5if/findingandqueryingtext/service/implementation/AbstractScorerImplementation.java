@@ -9,6 +9,10 @@ import com.github.quadinsa5if.findingandqueryingtext.tokenizer.DocumentParser;
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class AbstractScorerImplementation {
 
@@ -19,7 +23,7 @@ public abstract class AbstractScorerImplementation {
             '+', '-', '*', '%', '=' // Operators
     };
     private static String[] WHITE_SPACES = new String[]{" ", "\n", "\r\n"};
-    private final File[] dataSetFiles;
+    private final List<File> dataSetFiles;
 
     private InMemoryVocabularyImpl vocabulary;
 
@@ -39,11 +43,12 @@ public abstract class AbstractScorerImplementation {
 
     public abstract void onPassEnd();
 
-    AbstractScorerImplementation(File dataSetFolder, InvertedFileSerializer serializer) {
+    AbstractScorerImplementation(Stream<Path> dataSetFolder, InvertedFileSerializer serializer) {
         this.currentPassNumber = 1;
         this.serializer = serializer;
         vocabulary = new InMemoryVocabularyImpl();
-        dataSetFiles = dataSetFolder.listFiles();
+        dataSetFiles = dataSetFolder.map(Path::toFile)
+                .collect(Collectors.toList());
     }
 
     void setScore(String term, ArticleId articleId, float score) {
@@ -75,10 +80,8 @@ public abstract class AbstractScorerImplementation {
 
     void finalizeToScoreArticle() {
         currentIndexInBatch++;
-
         if (currentIndexInBatch == batchSize) {
             currentIndexInBatch = 0;
-
             serializeVocabulary();
         }
     }

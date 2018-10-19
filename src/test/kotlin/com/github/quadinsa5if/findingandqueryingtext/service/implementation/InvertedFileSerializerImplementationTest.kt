@@ -4,23 +4,32 @@ import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.equalTo
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.given
+import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.junit.platform.runner.JUnitPlatform
 import org.junit.runner.RunWith
+import java.io.File
+import java.io.FileReader
+import java.io.RandomAccessFile
 
 @RunWith(JUnitPlatform::class)
 object InvertedFileSerializerImplementationTest: Spek({
 
-  val serializer: InvertedFileSerializer = InvertedFileSerializerImplementation()
+  val TEST_FOLDER_NAME = "test_folder_inverted_file_serializer"
+  val testDirectory = File(TEST_FOLDER_NAME)
+  testDirectory.run { deleteRecursively(); delete() }
+  val serializer: InvertedFileSerializer = InvertedFileSerializerImplementation(TEST_FOLDER_NAME)
 
-  val d1 = ArticleId(1, "/d1")
-  val d2 = ArticleId(2, "/d2")
-  val d3 = ArticleId(3, "/d2")
-  val d4 = ArticleId(4, "/d4")
-  val d5 = ArticleId(5, "/d5")
-  val d6 = ArticleId(6, "/d6")
+  val d1 = ArticleId(1, "TODO")
+  val d2 = ArticleId(2, "TODO")
+  val d3 = ArticleId(3, "TODO")
+  val d4 = ArticleId(4, "TODO")
+  val d5 = ArticleId(5, "TODO")
+  val d6 = ArticleId(6, "TODO")
 
   val postingListT1 = listOf(
       Entry(d2, .9f),
@@ -45,11 +54,36 @@ object InvertedFileSerializerImplementationTest: Spek({
   postingListT2.forEach { postingLists.putEntry("t2", it) }
 
   given("an inverted file serializer implementation") {
-
     on("serialize") {
-      serializer.serialize(postingLists)
+      val result = serializer.serialize(postingLists)
+      it("result should be ok") {
+        assertThat(result.isOk, equalTo(true))
+      }
+    }
+  }
+
+  given("the serialized files") {
+    val result = serializer.serialize(postingLists).unwrap()
+    val headerFile = result.headerFile!!
+    val invertedFile = result.invertedFile!!
+
+    on("unserialize header") {
+      val headerResult = serializer.unserializeHeader(FileReader(headerFile)).attempt()
+      it("result must be ok") {
+        assertThat(headerResult.isOk, equalTo(true))
+      }
     }
 
+    on("unserialize vocabulary from header") {
+      val headerResult = serializer.unserializeHeader(FileReader(headerFile)).attempt()
+      val vocResult = serializer.unserialize(RandomAccessFile(invertedFile, "r"), headerResult.ok().get()).attempt()
+      it("result must be ok") {
+        assertThat(vocResult.isOk, equalTo(true))
+      }
+      it("result me be equals to the serialized posting list") {
+        assertThat(vocResult.ok().get(), equalTo(postingLists))
+      }
+    }
   }
 
 })
