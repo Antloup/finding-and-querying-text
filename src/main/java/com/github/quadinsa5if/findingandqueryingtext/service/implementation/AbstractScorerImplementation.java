@@ -48,9 +48,10 @@ public abstract class AbstractScorerImplementation implements Scorer {
 
     /**
      * Set the score of a term in an article
-     * @param term The term
+     *
+     * @param term      The term
      * @param articleId The article
-     * @param score The score
+     * @param score     The score
      */
     protected void setScore(String term, ArticleId articleId, float score) {
         vocabulary.putEntry(term, new Entry(articleId, score));
@@ -74,7 +75,7 @@ public abstract class AbstractScorerImplementation implements Scorer {
             this.onPassEnd();
         }
 
-        if(vocabulary.isEmpty()) {
+        if (vocabulary.isEmpty()) {
             finalizeToScoreArticle();
         }
 

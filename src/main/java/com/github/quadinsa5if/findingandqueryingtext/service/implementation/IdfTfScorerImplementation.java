@@ -65,7 +65,7 @@ public class IdfTfScorerImplementation extends AbstractScorerImplementation {
     public void onArticleParseEnd(ArticleId articleId) {
         if (currentPassNumber == 2) {
 
-            for(Map.Entry<String, Double> term : termsFrequencyInCurrentArticle.entrySet()) {
+            for (Map.Entry<String, Double> term : termsFrequencyInCurrentArticle.entrySet()) {
                 Double tf = 1 + Math.log(termsFrequencyInCurrentArticle.get(term.getKey()));
                 Double score = tf * idf.get(term.getKey());
                 setScore(term.getKey(), articleId, score.floatValue());
@@ -77,7 +77,7 @@ public class IdfTfScorerImplementation extends AbstractScorerImplementation {
     @Override
     public void onPassEnd() {
         if (currentPassNumber == 1) {
-            for(Map.Entry<String, Double> term: numberOfArticlesContainingTerm.entrySet()) {
+            for (Map.Entry<String, Double> term : numberOfArticlesContainingTerm.entrySet()) {
                 idf.put(term.getKey(), Math.log(numberOfArticles / (1 + term.getValue())));
             }
         }
