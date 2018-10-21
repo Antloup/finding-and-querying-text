@@ -1,35 +1,90 @@
 package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 
-import com.github.quadinsa5if.findingandqueryingtext.model.Metadata;
+import com.github.quadinsa5if.findingandqueryingtext.exception.InvalidInvertedFileException;
+import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
+import com.github.quadinsa5if.findingandqueryingtext.model.*;
 import com.github.quadinsa5if.findingandqueryingtext.service.MetadataSerializer;
+import com.github.quadinsa5if.findingandqueryingtext.service.Serializer;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
+import java.io.*;
+import java.nio.file.Files;
+import java.util.*;
 
-public class MetadataSerializerImplementation implements MetadataSerializer {
+public class MetadataSerializerImplementation extends Serializer implements MetadataSerializer {
+
+    public MetadataSerializerImplementation() {
+    }
+
+    public MetadataSerializerImplementation(String fileFolder) {
+        super(fileFolder);
+    }
+
     @Override
     public Result<File, Exception> serialize(List<Metadata> metadata) {
-        //TODO
-        return null;
+        int fileNumber = 0;
+        final File directory = new File(fileFolder);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+        File mfFile = new File(fileFolder + METADATA_FILE + fileNumber);
+        while (mfFile.exists()) {
+            fileNumber += 1;
+            mfFile = new File(fileFolder + METADATA_FILE + fileNumber);
+        }
+        final File mfValidFile = mfFile;
+        return Result.Try(() -> {
+            StringBuilder strBuilder = new StringBuilder();
+            if (mfValidFile.createNewFile()) {
+                BufferedWriter mfbw = Files.newBufferedWriter(mfValidFile.toPath());
+                for (Metadata meta : metadata) {
+                    strBuilder.setLength(0);
+                    strBuilder.append(meta.id)
+                            .append(PARTS_DELIMITER)
+                            .append(meta.path)
+                            .append(NEW_LINE);
+                    String e = strBuilder.toString();
+                    mfbw.write(e);
+                }
+                mfbw.close();
+            } else {
+                throw new InvalidInvertedFileException("Files already exists");
+            }
+            return mfValidFile;
+        });
     }
 
     @Override
-    public Result<List<Metadata>, IOException> unserialize(File file) {
-        //TODO
-        return null;
+    public IO<List<Metadata>> unserialize(FileReader file) {
+        return () -> {
+            List<Metadata> metadata = new ArrayList<>();
+            String line;
+            final LineNumberReader lineReader = new LineNumberReader(file);
+            while ((line = lineReader.readLine()) != null) {
+                String[] attributes = line.split(String.valueOf(PARTS_DELIMITER));
+                if (attributes.length != 2) {
+                    throw new InvalidInvertedFileException("Invalid metadata file at line " + lineReader.getLineNumber());
+                }
+                metadata.add(new Metadata(Integer.valueOf(attributes[0]),attributes[1]));
+            }
+            return metadata;
+        };
     }
 
     @Override
-    public Result<Metadata, IOException> unserialize(File file, int articleId) {
-        //TODO
-        return null;
-    }
-
-    @Override
-    public Result<List<Metadata>, IOException> unserialize(File file, List<Integer> articlesId) {
-        //TODO
-        return null;
+    public IO<Optional<Metadata>> unserialize(FileReader file, int articleId) {
+        return () -> {
+            String line;
+            final LineNumberReader lineReader = new LineNumberReader(file);
+            while ((line = lineReader.readLine()) != null) {
+                String[] attributes = line.split(String.valueOf(PARTS_DELIMITER));
+                if (attributes.length != 2) {
+                    throw new InvalidInvertedFileException("Invalid metadata file at line " + lineReader.getLineNumber());
+                } else if(Integer.valueOf(attributes[0]) == articleId){
+                    return Optional.of(new Metadata(Integer.valueOf(attributes[0]),attributes[1]));
+                }
+            }
+            return Optional.empty();
+        };
     }
 }

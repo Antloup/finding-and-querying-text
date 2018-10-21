@@ -8,21 +8,14 @@ import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile
 import com.github.quadinsa5if.findingandqueryingtext.model.ReversedIndexIdentifier;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
+import com.github.quadinsa5if.findingandqueryingtext.service.Serializer;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.util.*;
 
-public class InvertedFileSerializerImplementation implements InvertedFileSerializer {
-
-    private static final String INVERTED_FILE = "/if";
-    private static final String HEADER_FILE = "/hf";
-    private String fileFolder = "fileTest/novb";
-
-    private static final char PARTS_DELIMITER = ':';
-    private static final char IDENTIFIERS_DELIMITER = ';';
-    private static final String NEW_LINE = "\r\n";
+public class InvertedFileSerializerImplementation extends Serializer implements InvertedFileSerializer {
 
     public InvertedFileSerializerImplementation() {
     }
@@ -31,7 +24,7 @@ public class InvertedFileSerializerImplementation implements InvertedFileSeriali
      * @param fileFolder : path of the folder (without '/' at the end)
      */
     public InvertedFileSerializerImplementation(String fileFolder) {
-        this.fileFolder = fileFolder;
+        super(fileFolder);
     }
 
     @Override
@@ -140,7 +133,6 @@ public class InvertedFileSerializerImplementation implements InvertedFileSeriali
                 if (score.length != 2) {
                     throw new InvalidInvertedFileException("Invalid inverted file between offset " + postingListOffset + " and " + (postingListOffset + postingListLength));
                 }
-                //TODO: Call Metadata service
                 entries.add(new Entry(new ArticleId(Integer.valueOf(score[0])), Float.valueOf(score[1])));
             }
             return entries;

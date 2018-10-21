@@ -24,12 +24,12 @@ object InvertedFileSerializerImplementationTest: Spek({
   testDirectory.run { deleteRecursively(); delete() }
   val serializer: InvertedFileSerializer = InvertedFileSerializerImplementation(TEST_FOLDER_NAME)
 
-  val d1 = ArticleId(1, "TODO")
-  val d2 = ArticleId(2, "TODO")
-  val d3 = ArticleId(3, "TODO")
-  val d4 = ArticleId(4, "TODO")
-  val d5 = ArticleId(5, "TODO")
-  val d6 = ArticleId(6, "TODO")
+  val d1 = ArticleId(1)
+  val d2 = ArticleId(2)
+  val d3 = ArticleId(3)
+  val d4 = ArticleId(4)
+  val d5 = ArticleId(5)
+  val d6 = ArticleId(6)
 
   val postingListT1 = listOf(
       Entry(d2, .9f),
