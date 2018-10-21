@@ -2,6 +2,8 @@ package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 
 import com.github.quadinsa5if.findingandqueryingtext.exception.InvalidInvertedFileException;
 import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
+import com.github.quadinsa5if.findingandqueryingtext.lang.Pair;
+import com.github.quadinsa5if.findingandqueryingtext.lang.Unit;
 import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
 import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile;
@@ -44,34 +46,19 @@ public class InvertedFileSerializerImplementation extends Serializer implements 
         final File ifValidFile = ifFile;
         final File hfValidFile = hfFile;
         return Result.Try(() -> {
-            StringBuilder strBuilder = new StringBuilder();
             if (hfValidFile.createNewFile() && ifValidFile.createNewFile()) {
                 BufferedWriter hfbw = Files.newBufferedWriter(hfValidFile.toPath());
                 BufferedWriter ifbw = Files.newBufferedWriter(ifValidFile.toPath());
                 int offset = 0;
-                int length = 0;
+                List<Pair<String, ReversedIndexIdentifier>> reversedIndexIdentifiers = new ArrayList<>();
                 for (String term : vocabulary.getTerms()) {
-                    for (Entry entry : vocabulary.getPostingList(term)) {
-                        strBuilder.setLength(0); // Clear buffer
-                        strBuilder.append(entry.articleId.id)
-                                .append(PARTS_DELIMITER)
-                                .append(entry.score)
-                                .append(IDENTIFIERS_DELIMITER);
-                        String e = strBuilder.toString();
-                        length += e.length();
-                        ifbw.write(e);
-                    }
-                    strBuilder.setLength(0);
-                    strBuilder.append(term)
-                            .append(PARTS_DELIMITER)
-                            .append(offset)
-                            .append(PARTS_DELIMITER)
-                            .append(length)
-                            .append(NEW_LINE);
-                    hfbw.write(strBuilder.toString());
+                    int length = writeEntries(vocabulary.getPostingList(term), ifbw).sync();
+                    reversedIndexIdentifiers.add(
+                            new Pair(term, new ReversedIndexIdentifier(offset, length))
+                    );
                     offset += length;
-                    length = 0;
                 }
+                writeReversedIndexIdentifier(reversedIndexIdentifiers, hfbw).sync();
                 hfbw.close();
                 ifbw.close();
             } else {
@@ -82,16 +69,53 @@ public class InvertedFileSerializerImplementation extends Serializer implements 
     }
 
     @Override
+    public IO<Integer> writeEntries(List<Entry> entries, BufferedWriter writer) {
+        final StringBuilder stringBuilder = new StringBuilder();
+        return () -> {
+            int totalLength = 0;
+            for (Entry entry : entries) {
+                stringBuilder.setLength(0);
+                stringBuilder.append(entry.articleId.id)
+                        .append(PARTS_DELIMITER)
+                        .append(entry.score)
+                        .append(IDENTIFIERS_DELIMITER);
+                String res = stringBuilder.toString();
+                totalLength += res.length();
+                writer.write(res);
+            }
+            return totalLength;
+        };
+    }
+
+    @Override
+    public IO<Unit> writeReversedIndexIdentifier(List<Pair<String, ReversedIndexIdentifier>> reversedIndexIdentifiers, BufferedWriter writer) {
+        final StringBuilder stringBuilder = new StringBuilder();
+        return () -> {
+            for (Pair<String, ReversedIndexIdentifier> rIdx : reversedIndexIdentifiers) {
+                stringBuilder.setLength(0);
+                stringBuilder.append(rIdx.first)
+                        .append(PARTS_DELIMITER)
+                        .append(rIdx.second.offset)
+                        .append(PARTS_DELIMITER)
+                        .append(rIdx.second.length)
+                        .append(NEW_LINE);
+                writer.write(stringBuilder.toString());
+            }
+            return new Unit();
+        };
+    }
+
+    @Override
     public IO<InMemoryVocabularyImpl> unserialize(RandomAccessFile file, Map<String, ReversedIndexIdentifier> header) {
         return () -> {
             InMemoryVocabularyImpl vocabulary = new InMemoryVocabularyImpl();
             for (Map.Entry<String, ReversedIndexIdentifier> termHeader : header.entrySet()) {
                 IO<List<Entry>> entries = unserializePostingList(file, termHeader.getValue().offset, termHeader.getValue().length);
                 entries.map(it -> {
-                    for(Entry entry : it) {
+                    for (Entry entry : it) {
                         vocabulary.putEntry(termHeader.getKey(), entry);
                     }
-                    return 0;
+                    return new Unit();
                 }).sync();
             }
             return vocabulary;
