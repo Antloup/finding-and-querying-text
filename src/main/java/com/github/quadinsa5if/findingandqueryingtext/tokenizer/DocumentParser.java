@@ -49,7 +49,7 @@ public class DocumentParser {
         while (reader.hasNext()) {
             final XMLEvent event = reader.nextEvent();
             if (event.isEndElement() && event.asEndElement().getName().getLocalPart().equals(DOCUMENT)) {
-                final ArticleId article = new ArticleId(id, "");
+                final ArticleId article = new ArticleId(id);
                 scorer.onArticleParseEnd(article);
                 return;
             }

@@ -17,12 +17,12 @@ import org.junit.runner.RunWith
 @RunWith(JUnitPlatform::class)
 object NativeSolverImplTest : Spek({
 
-  val d1 = ArticleId(1, "/d1")
-  val d2 = ArticleId(2, "/d2")
-  val d3 = ArticleId(3, "/d2")
-  val d4 = ArticleId(4, "/d4")
-  val d5 = ArticleId(5, "/d5")
-  val d6 = ArticleId(6, "/d6")
+  val d1 = ArticleId(1)
+  val d2 = ArticleId(2)
+  val d3 = ArticleId(3)
+  val d4 = ArticleId(4)
+  val d5 = ArticleId(5)
+  val d6 = ArticleId(6)
 
   val postingListT1 = listOf(
       Entry(d2, .9f),

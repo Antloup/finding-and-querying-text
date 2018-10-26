@@ -5,11 +5,13 @@ import java.util.Objects;
 public class ArticleId {
 
   public final int id;
-  public final String path;
 
-  public ArticleId(int id, String path) {
+  public ArticleId(int id) {
     this.id = id;
-    this.path = path;
+  }
+
+  public int id() {
+    return id;
   }
 
   @Override
@@ -17,20 +19,18 @@ public class ArticleId {
     if (this == o) return true;
     if (!(o instanceof ArticleId)) return false;
     ArticleId articleId = (ArticleId) o;
-    return id == articleId.id &&
-        Objects.equals(path, articleId.path);
+    return id == articleId.id;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, path);
+    return Objects.hash(id);
   }
 
   @Override
   public String toString() {
     return "ArticleId{" +
         "id=" + id +
-        ", path='" + path + '\'' +
         '}';
   }
 }
