@@ -30,7 +30,7 @@ class InvertedFileMergerImpl(
                 val headersPart = serializer
                         .unserializeHeader(FileReader(headerAndInverted.headerFile))
                         .map { header ->
-                            header.entries.map { mapEntry ->
+                            header.entries.asSequence().map { mapEntry ->
                                 Pair(mapEntry)
                             }.toMutableList()
                         }
@@ -106,7 +106,8 @@ class InvertedFileMergerImpl(
     fun increments(
             indices: List<Int>,
             terms: MutableList<MutableList<Pair<String, ReversedIndexIdentifier>>>,
-            invertedFiles: MutableList<RandomAccessFile>) {
+            invertedFiles: MutableList<RandomAccessFile>
+    ) {
         val emptyListIndices = mutableListOf<Int>()
         for (i in indices) {
             terms[i].removeAt(0)

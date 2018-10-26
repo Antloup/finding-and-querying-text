@@ -29,6 +29,8 @@ public abstract class Result<T, E extends Exception> {
 
     public abstract boolean isErr();
 
+    public abstract T expect(String errorMsg);
+
     public static <T> Result<T, Exception> Try(UnsafeSupplier<T> supplier) {
         try {
             return new Result.Ok<>(supplier.get());
@@ -99,6 +101,11 @@ public abstract class Result<T, E extends Exception> {
         public void foldC(@NotNull Consumer<T> ifOk, @NotNull Consumer<E> ifErr) {
             ifOk.accept(ok);
         }
+
+        @Override
+        public T expect(String errorMsg) {
+            return ok;
+        }
     }
 
     public static class Err<T, E extends Exception> extends Result<T, E> {
@@ -153,6 +160,11 @@ public abstract class Result<T, E extends Exception> {
         @Override
         public void foldC(@NotNull Consumer<T> ifOk, @NotNull Consumer<E> ifErr) {
             ifErr.accept(err);
+        }
+
+        @Override
+        public T expect(String errorMsg) {
+            throw new RuntimeException(errorMsg, err);
         }
     }
 

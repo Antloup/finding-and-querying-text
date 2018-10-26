@@ -1,6 +1,7 @@
 package com.github.quadinsa5if.findingandqueryingtext;
 
 import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
+import com.github.quadinsa5if.findingandqueryingtext.lang.Unit;
 import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.Vocabulary;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InDiskVocabularyImpl;
@@ -86,7 +87,8 @@ public class App {
         try {
             CommandLine commandLine = commandLineParser.parse(options, args);
             final IO<Stream<Path>> dataFolder = listFiles(commandLine.getOptionValue(articleFolder.getOpt()));
-            final File outputFileName = new File(commandLine.getOptionValue(ouputFile.getOpt()));
+            final String outputFileName = commandLine.getOptionValue(ouputFile.getOpt());
+            final File outputFile = new File(outputFileName);
 
             final boolean buildIndex = commandLine.hasOption(buildInvertedFile.getOpt());
             final boolean runBenchmarks = commandLine.hasOption(benchmark.getOpt());
@@ -95,13 +97,23 @@ public class App {
 
             if (buildIndex) {
                 dataFolder.map(folder -> {
-                    buildInvertedFile(folder, outputFileName);
-                    return 0;
+                    buildInvertedFile(folder, outputFile);
+                    return new Unit();
                 }).sync();
             }
             if (hasQuery) {
+                String[] termsAndK = commandLine.getOptionValues(query.getOpt());
+                int k = Integer.valueOf(termsAndK[0]);
+                String[] terms = new String[termsAndK.length - 1];
+                System.arraycopy(termsAndK, 1, terms, 0, termsAndK.length - 1);
                 System.out.println("Running query");
-                // Todo: perform query
+                final FileReader header = open(outputFileName + "_header")
+                        .expect("Unknown file " + outputFileName + "_header");
+                final RandomAccessFile invertedIndex = openRandom(outputFileName + "_posting_lists")
+                        .expect("Unknown file " + outputFileName + "_posting_lists");
+                final Vocabulary inDiscVoc = new InDiskVocabularyImpl(header, invertedIndex, 10);
+                final QuerySolver solver = new NativeSolverImpl(inDiscVoc);
+                System.out.println(solver.answer(terms, k));
             }
             if (runTests) {
                 System.out.println("Runnin tests");
