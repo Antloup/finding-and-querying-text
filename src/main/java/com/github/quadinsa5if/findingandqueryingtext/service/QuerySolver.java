@@ -1,7 +1,6 @@
 package com.github.quadinsa5if.findingandqueryingtext.service;
 
 import com.github.quadinsa5if.findingandqueryingtext.lang.Iter;
-import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
 
 public interface QuerySolver {
 
@@ -11,6 +10,6 @@ public interface QuerySolver {
    * @param k The number of articles to return (must be >= 0)
    * @return An iterator other the top-k articles
    */
-  Iter<ArticleId> answer(String[] terms, int k);
+  Iter<Integer> answer(String[] terms, int k);
 
 }

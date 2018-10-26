@@ -21,7 +21,7 @@ public class MetadataSerializerImplementation extends Serializer implements Meta
     }
 
     @Override
-    public Result<File, Exception> serialize(List<Metadata> metadata) {
+    public Result<File, Exception> serialize(List<ArticleHeader> metadata) {
         int fileNumber = 0;
         final File directory = new File(fileFolder);
         if (!directory.exists()) {
@@ -37,7 +37,7 @@ public class MetadataSerializerImplementation extends Serializer implements Meta
             StringBuilder strBuilder = new StringBuilder();
             if (mfValidFile.createNewFile()) {
                 BufferedWriter mfbw = Files.newBufferedWriter(mfValidFile.toPath());
-                for (Metadata meta : metadata) {
+                for (ArticleHeader meta : metadata) {
                     strBuilder.setLength(0);
                     strBuilder.append(meta.id)
                             .append(PARTS_DELIMITER)
@@ -55,9 +55,9 @@ public class MetadataSerializerImplementation extends Serializer implements Meta
     }
 
     @Override
-    public IO<List<Metadata>> unserialize(FileReader file) {
+    public IO<List<ArticleHeader>> unserialize(FileReader file) {
         return () -> {
-            List<Metadata> metadata = new ArrayList<>();
+            List<ArticleHeader> metadata = new ArrayList<>();
             String line;
             final LineNumberReader lineReader = new LineNumberReader(file);
             while ((line = lineReader.readLine()) != null) {
@@ -65,14 +65,14 @@ public class MetadataSerializerImplementation extends Serializer implements Meta
                 if (attributes.length != 2) {
                     throw new InvalidInvertedFileException("Invalid metadata file at line " + lineReader.getLineNumber());
                 }
-                metadata.add(new Metadata(Integer.valueOf(attributes[0]),attributes[1]));
+                metadata.add(new ArticleHeader(Integer.valueOf(attributes[0]),attributes[1]));
             }
             return metadata;
         };
     }
 
     @Override
-    public IO<Optional<Metadata>> unserialize(FileReader file, int articleId) {
+    public IO<Optional<ArticleHeader>> unserialize(FileReader file, int articleId) {
         return () -> {
             String line;
             final LineNumberReader lineReader = new LineNumberReader(file);
@@ -81,7 +81,7 @@ public class MetadataSerializerImplementation extends Serializer implements Meta
                 if (attributes.length != 2) {
                     throw new InvalidInvertedFileException("Invalid metadata file at line " + lineReader.getLineNumber());
                 } else if(Integer.valueOf(attributes[0]) == articleId){
-                    return Optional.of(new Metadata(Integer.valueOf(attributes[0]),attributes[1]));
+                    return Optional.of(new ArticleHeader(Integer.valueOf(attributes[0]),attributes[1]));
                 }
             }
             return Optional.empty();

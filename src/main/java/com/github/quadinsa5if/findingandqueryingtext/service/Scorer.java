@@ -1,6 +1,5 @@
 package com.github.quadinsa5if.findingandqueryingtext.service;
 
-import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
 import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile;
 
 import java.util.List;
@@ -31,7 +30,7 @@ public interface Scorer {
      *
      * @param articleId The article that has been parsed
      */
-    void onArticleParseEnd(ArticleId articleId);
+    void onArticleParseEnd(int articleId);
 
     /**
      * Called when a parsing pass has just finished

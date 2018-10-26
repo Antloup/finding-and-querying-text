@@ -4,15 +4,15 @@ import java.util.Objects;
 
 public class Entry {
 
-    public final ArticleId articleId;
+    public final int articleId;
     public final float score;
 
-    public Entry(ArticleId articleId, float score) {
+    public Entry(int articleId, float score) {
         this.articleId = articleId;
         this.score = score;
     }
 
-    public ArticleId articleId() {
+    public int articleId() {
         return articleId;
     }
 

@@ -1,9 +1,7 @@
 package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 
-import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,7 +60,7 @@ public class IdfTfScorerImplementation extends AbstractScorerImplementation {
     }
 
     @Override
-    public void onArticleParseEnd(ArticleId articleId) {
+    public void onArticleParseEnd(int articleId) {
         if (currentPassNumber == 2) {
 
             for (Map.Entry<String, Double> term : termsFrequencyInCurrentArticle.entrySet()) {
