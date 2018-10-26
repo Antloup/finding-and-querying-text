@@ -1,7 +1,7 @@
 package com.github.quadinsa5if.findingandqueryingtext.tokenizer;
 
 import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
-import com.github.quadinsa5if.findingandqueryingtext.service.implementation.AbstractScorerImplementation;
+import com.github.quadinsa5if.findingandqueryingtext.service.DatasetVisitor;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -16,29 +16,61 @@ import java.util.List;
 
 public class DocumentParser {
 
+    private static char[] ESCAPED = new char[]{
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', // Digits
+            '?', ',', '.', ';', '?', ':', '!', '\'', '"', '(', ')', '{', '}', '[', ']', '$', // Punctuation
+            '&', // Special character
+            '+', '-', '*', '%', '=' // Operators
+    };
+    private static String[] WHITE_SPACES = new String[]{" ", "\n", "\r\n"};
+
     private static final String DOCUMENT_ID = "DOCID";
     private static final String DOCUMENT = "DOC";
     //  private static final String HEADER = "HEADLINE";
     private static final String PARAGRAPH = "P";
 
-    private final XMLEventReader reader;
-    private final AbstractScorerImplementation scorer;
+    private XMLEventReader reader;
+    private final List<DatasetVisitor> visitors;
+    private int currentPassNumber;
 
-    public DocumentParser(File document, AbstractScorerImplementation scorer) throws XMLStreamException, FileNotFoundException {
-        reader = XMLInputFactory.newFactory().createXMLEventReader(new FileInputStream(document));
-        this.scorer = scorer;
+    public DocumentParser(List<DatasetVisitor> visitors) {
+        this.visitors = visitors;
+        reader = null;
+        currentPassNumber = 1;
     }
 
-    public void parse(
-            char[] ignored,
-            String[] delimiters) throws XMLStreamException {
-        while (reader.hasNext()) {
-            final XMLEvent event = reader.nextEvent();
-            if (event.isStartElement() && event.asStartElement().getName().getLocalPart().equals(DOCUMENT)) {
-                parseArticle(reader, ignored, delimiters);
+    public void parse(File document) throws FileNotFoundException, XMLStreamException {
+        reader = XMLInputFactory.newFactory().createXMLEventReader(new FileInputStream(document));
+
+        int totalPassNumber = 0;
+
+        for (DatasetVisitor visitor : visitors) {
+            totalPassNumber = Math.max(totalPassNumber, visitor.getTotalPassNumber());
+        }
+
+        for (currentPassNumber = 1; currentPassNumber <= totalPassNumber; currentPassNumber++) {
+
+            try {
+
+                while (reader.hasNext()) {
+                    final XMLEvent event = reader.nextEvent();
+                    if (event.isStartElement() && event.asStartElement().getName().getLocalPart().equals(DOCUMENT)) {
+                        parseArticle(reader, ESCAPED, WHITE_SPACES);
+                    }
+
+                }
+                for (DatasetVisitor visitor : visitors) {
+                    if(currentPassNumber <= visitor.getTotalPassNumber()) {
+                        visitor.onPassEnd(currentPassNumber);
+                    }
+                }
+
+            } catch (XMLStreamException e) {
+                throw new RuntimeException(e);
             }
         }
     }
+
 
     private void parseArticle(
             final XMLEventReader reader,
@@ -50,7 +82,12 @@ public class DocumentParser {
             final XMLEvent event = reader.nextEvent();
             if (event.isEndElement() && event.asEndElement().getName().getLocalPart().equals(DOCUMENT)) {
                 final ArticleId article = new ArticleId(id);
-                scorer.onArticleParseEnd(article);
+                for (DatasetVisitor visitor : visitors) {
+                    if(currentPassNumber <= visitor.getTotalPassNumber()) {
+
+                        visitor.onArticleParseEnd(article, currentPassNumber);
+                    }
+                }
                 return;
             }
             if (event.isStartElement()) {
@@ -59,11 +96,20 @@ public class DocumentParser {
                 switch (elementName) {
                     case DOCUMENT_ID:
                         id = Integer.valueOf(reader.getElementText().trim());
-                        scorer.onArticleParseStart();
+                        for (DatasetVisitor visitor : visitors) {
+                            if(currentPassNumber <= visitor.getTotalPassNumber()) {
+                                visitor.onArticleParseStart(currentPassNumber);
+                            }
+                        }
+
                         break;
                     case PARAGRAPH:
-                        for (String word : split(reader.getElementText(), ignored, delimiters)) {
-                            scorer.onTermRead(word);
+                        for (String term : split(reader.getElementText(), ignored, delimiters)) {
+                            for (DatasetVisitor visitor : visitors) {
+                                if(currentPassNumber <= visitor.getTotalPassNumber()) {
+                                    visitor.onTermRead(term, currentPassNumber);
+                                }
+                            }
                         }
                         break;
                     default:

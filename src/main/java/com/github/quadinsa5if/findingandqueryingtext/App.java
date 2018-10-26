@@ -3,12 +3,14 @@ package com.github.quadinsa5if.findingandqueryingtext;
 import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
 import com.github.quadinsa5if.findingandqueryingtext.lang.Unit;
 import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile;
+import com.github.quadinsa5if.findingandqueryingtext.model.Metadata;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.Vocabulary;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InDiskVocabularyImpl;
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileMerger;
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
 import com.github.quadinsa5if.findingandqueryingtext.service.QuerySolver;
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.*;
+import com.github.quadinsa5if.findingandqueryingtext.tokenizer.DocumentParser;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 import org.apache.commons.cli.*;
 
@@ -130,8 +132,13 @@ public class App {
 
     private static HeaderAndInvertedFile buildInvertedFile(Stream<Path> articlesFolder, File outputFile) {
         final InvertedFileSerializer serializer = new InvertedFileSerializerImplementation();
-        AbstractScorerImplementation scorer = new IdfTfScorerImplementation(articlesFolder, serializer);
-        List<HeaderAndInvertedFile> partitions = scorer.evaluate(1);
+
+        ScorerDatasetVisitor scorerVisitor = new ScorerDatasetVisitor(serializer, 10);
+        MetadataDatasetVisitor metadataVisitor = new MetadataDatasetVisitor();
+
+        DocumentParser parser = new DocumentParser(Arrays.asList(scorerVisitor, metadataVisitor));
+
+        List<HeaderAndInvertedFile> partitions = scorerVisitor.getPartitions();
         final InvertedFileMerger merger = new InvertedFileMergerImplementation(serializer);
         final HeaderAndInvertedFile complete = merger.merge(partitions, new HeaderAndInvertedFile(new File(outputFile + "_header"), new File(outputFile + "_posting_lists")));
         return complete;
