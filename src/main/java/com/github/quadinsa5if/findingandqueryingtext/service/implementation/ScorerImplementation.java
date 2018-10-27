@@ -7,6 +7,7 @@ import com.github.quadinsa5if.findingandqueryingtext.service.DatasetVisitor;
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 
+import java.io.File;
 import java.util.*;
 
 public class ScorerImplementation implements DatasetVisitor {
@@ -96,6 +97,11 @@ public class ScorerImplementation implements DatasetVisitor {
 
     @Override
     public void onPassEnd(int currentPassNumber) {
+    }
+
+    @Override
+    public void onPassStart(File file, int currentPassNumber) {
+
     }
 
     /**
