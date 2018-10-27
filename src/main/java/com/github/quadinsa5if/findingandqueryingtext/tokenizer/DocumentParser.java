@@ -1,6 +1,6 @@
 package com.github.quadinsa5if.findingandqueryingtext.tokenizer;
 
-import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
+import com.github.quadinsa5if.findingandqueryingtext.model.Article;
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.AbstractScorerImplementation;
 
 import javax.xml.stream.XMLEventReader;
@@ -18,7 +18,6 @@ public class DocumentParser {
 
     private static final String DOCUMENT_ID = "DOCID";
     private static final String DOCUMENT = "DOC";
-    //  private static final String HEADER = "HEADLINE";
     private static final String PARAGRAPH = "P";
 
     private final XMLEventReader reader;
@@ -49,7 +48,7 @@ public class DocumentParser {
         while (reader.hasNext()) {
             final XMLEvent event = reader.nextEvent();
             if (event.isEndElement() && event.asEndElement().getName().getLocalPart().equals(DOCUMENT)) {
-                final ArticleId article = new ArticleId(id);
+                final int article = id;
                 scorer.onArticleParseEnd(article);
                 return;
             }

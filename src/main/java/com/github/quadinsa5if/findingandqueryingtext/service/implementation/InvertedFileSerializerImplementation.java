@@ -4,10 +4,7 @@ import com.github.quadinsa5if.findingandqueryingtext.exception.InvalidInvertedFi
 import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
 import com.github.quadinsa5if.findingandqueryingtext.lang.Pair;
 import com.github.quadinsa5if.findingandqueryingtext.lang.Unit;
-import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
-import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
-import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile;
-import com.github.quadinsa5if.findingandqueryingtext.model.ReversedIndexIdentifier;
+import com.github.quadinsa5if.findingandqueryingtext.model.*;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
 import com.github.quadinsa5if.findingandqueryingtext.service.Serializer;
@@ -75,7 +72,7 @@ public class InvertedFileSerializerImplementation extends Serializer implements 
             int totalLength = 0;
             for (Entry entry : entries) {
                 stringBuilder.setLength(0);
-                stringBuilder.append(entry.articleId.id)
+                stringBuilder.append(entry.articleId)
                         .append(PARTS_DELIMITER)
                         .append(entry.score)
                         .append(IDENTIFIERS_DELIMITER);
@@ -157,7 +154,7 @@ public class InvertedFileSerializerImplementation extends Serializer implements 
                 if (score.length != 2) {
                     throw new InvalidInvertedFileException("Invalid inverted file between offset " + postingListOffset + " and " + (postingListOffset + postingListLength));
                 }
-                entries.add(new Entry(new ArticleId(Integer.valueOf(score[0])), Float.valueOf(score[1])));
+                entries.add(new Entry(Integer.valueOf(score[0]), Float.valueOf(score[1])));
             }
             return entries;
         };

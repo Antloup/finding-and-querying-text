@@ -1,7 +1,6 @@
 package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 
 import com.github.quadinsa5if.findingandqueryingtext.lang.Iter;
-import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.Vocabulary;
 import com.github.quadinsa5if.findingandqueryingtext.service.QuerySolver;
@@ -23,29 +22,29 @@ public class NativeSolverImpl implements QuerySolver {
   }
 
   @Override
-  public Iter<ArticleId> answer(String[] terms, int k) {
+  public Iter<Integer> answer(String[] terms, int k) {
 
     final List<Entry> postingListForTerms = new ArrayList<>();
     for (String term : terms) {
       postingListForTerms.addAll(vocabulary.getPostingList(term));
     }
 
-    final Map<ArticleId, Double> mergedScores = postingListForTerms
+    final Map<Integer, Double> mergedScores = postingListForTerms
         .stream()
         .collect(Collectors.groupingBy(Entry::articleId, averagingDouble(Entry::score)));
 
-    final List<ArticleId> bestKScores = mergedScores.entrySet()
+    final List<Integer> bestKScores = mergedScores.entrySet()
         .stream()
         .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
         .limit((long) k)
         .map(Map.Entry::getKey)
         .collect(Collectors.toList());
 
-    return new Iter<ArticleId>() {
+    return new Iter<Integer>() {
       int i = 0;
       @Override
-      public Optional<ArticleId> next() {
-        Optional<ArticleId> result;
+      public Optional<Integer> next() {
+        Optional<Integer> result;
         if (i < bestKScores.size()) {
           result = Optional.of(bestKScores.get(i));
           i += 1;

@@ -1,16 +1,10 @@
 package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 
-import com.github.quadinsa5if.findingandqueryingtext.exception.InvalidInvertedFileException;
 import com.github.quadinsa5if.findingandqueryingtext.lang.Iter;
-import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.Vocabulary;
-import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InDiskVocabularyImpl;
-import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
-import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
 import com.github.quadinsa5if.findingandqueryingtext.service.QuerySolver;
 
-import java.io.File;
 import java.util.*;
 
 public class FaginSolvertImpl implements QuerySolver {
@@ -22,7 +16,7 @@ public class FaginSolvertImpl implements QuerySolver {
     }
 
     @Override
-    public Iter<ArticleId> answer(String[] terms, int k) {
+    public Iter<Integer> answer(String[] terms, int k) {
         return null;
     }
 
@@ -38,7 +32,7 @@ public class FaginSolvertImpl implements QuerySolver {
 
             scoreSortEntries.put(term, sortedEntriesForTerm);
             for (Entry entry : sortedEntriesForTerm) {
-                randomAccessEntriesForTerm.put(entry.articleId.id, entry);
+                randomAccessEntriesForTerm.put(entry.articleId, entry);
             }
             randomAccessEntries.put(term, randomAccessEntriesForTerm);
         }

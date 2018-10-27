@@ -1,6 +1,5 @@
 package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 
-import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId;
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
 import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
@@ -53,7 +52,7 @@ public abstract class AbstractScorerImplementation implements Scorer {
      * @param articleId The article
      * @param score     The score
      */
-    protected void setScore(String term, ArticleId articleId, float score) {
+    protected void setScore(String term, int articleId, float score) {
         vocabulary.putEntry(term, new Entry(articleId, score));
     }
 
