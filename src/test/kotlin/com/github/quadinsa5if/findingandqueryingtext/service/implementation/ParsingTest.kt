@@ -29,9 +29,9 @@ object ParsingTest : Spek({
 
 
             it("scores are correct") {
-                assertThat("'god' score in article 1", allScores.get("1_god"), equalTo(0.8859001247045623))
+                assertThat("'god' score in article 1", allScores.get("1_god"), equalTo(0.8859002f))
                 assertThat("'god' score in article 2", allScores.containsKey("2_god"), equalTo(false))
-                assertThat("'god' score in article 3", allScores.get("3_god"), equalTo(0.6037331324768168))
+                assertThat("'god' score in article 3", allScores.get("3_god"), equalTo(0.6037332f))
                 assertThat("'god' score in article 4", allScores.containsKey("4_god"), equalTo(false))
             }
 

@@ -31,21 +31,21 @@ object InvertedFileSerializerImplementationTest: Spek({
   val d6 = 6
 
   val postingListT1 = listOf(
-      Entry(d2, .9),
-      Entry(d5, .8),
-      Entry(d6, .7),
-      Entry(d4, .6),
-      Entry(d1, .5),
-      Entry(d3, .4)
+      Entry(d2, .9f),
+      Entry(d5, .8f),
+      Entry(d6, .7f),
+      Entry(d4, .6f),
+      Entry(d1, .5f),
+      Entry(d3, .4f)
   )
 
   val postingListT2 = listOf(
-      Entry(d3, .85),
-      Entry(d5, .8),
-      Entry(d2, .75),
-      Entry(d6, .74),
-      Entry(d1, .74),
-      Entry(d4, .7)
+      Entry(d3, .85f),
+      Entry(d5, .8f),
+      Entry(d2, .75f),
+      Entry(d6, .74f),
+      Entry(d1, .74f),
+      Entry(d4, .7f)
   )
 
   val postingLists = InMemoryVocabularyImpl()
