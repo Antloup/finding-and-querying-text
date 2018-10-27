@@ -10,6 +10,7 @@ import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSeriali
 import com.github.quadinsa5if.findingandqueryingtext.service.QuerySolver;
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.*;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
+import com.github.rloic.quadinsa5if.findindandqueryingtext.service.implementation.InvertedFileMergerImpl;
 import org.apache.commons.cli.*;
 
 import java.io.*;
@@ -17,7 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class App {
@@ -124,16 +124,17 @@ public class App {
         } catch (ParseException e) {
             helpFormatter.printHelp("java -jar ./app.jar -f folder -o inverted_file [opts]", options);
         } catch (Exception e) {
+            e.printStackTrace();
             System.err.println(e.getMessage());
         }
     }
 
-    private static HeaderAndInvertedFile buildInvertedFile(Stream<Path> articlesFolder, File outputFile) {
+    private static Result<HeaderAndInvertedFile, IOException> buildInvertedFile(Stream<Path> articlesFolder, File outputFile) {
         final InvertedFileSerializer serializer = new InvertedFileSerializerImplementation();
         AbstractScorerImplementation scorer = new IdfTfScorerImplementation(articlesFolder, serializer);
         List<HeaderAndInvertedFile> partitions = scorer.evaluate(1);
-        final InvertedFileMerger merger = new InvertedFileMergerImplementation(serializer);
-        final HeaderAndInvertedFile complete = merger.merge(partitions, new HeaderAndInvertedFile(new File(outputFile + "_header"), new File(outputFile + "_posting_lists")));
+        final InvertedFileMerger merger = new InvertedFileMergerImpl(serializer);
+        final Result<HeaderAndInvertedFile, IOException> complete = merger.merge(partitions, new HeaderAndInvertedFile(new File(outputFile + "_header"), new File(outputFile + "_posting_lists")));
         return complete;
     }
 

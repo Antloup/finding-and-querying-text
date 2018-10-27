@@ -1,4 +1,4 @@
-package com.github.rloic.quadinsa5if.findindandqueryingtext
+package com.github.rloic.quadinsa5if.findindandqueryingtext.service.implementation
 
 import com.github.quadinsa5if.findingandqueryingtext.lang.IO
 import com.github.quadinsa5if.findingandqueryingtext.lang.Pair
@@ -8,16 +8,14 @@ import com.github.quadinsa5if.findingandqueryingtext.model.ReversedIndexIdentifi
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileMerger
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.InvertedFileSerializerImplementation
-import java.io.BufferedWriter
-import java.io.FileReader
-import java.io.FileWriter
-import java.io.RandomAccessFile
+import com.github.quadinsa5if.findingandqueryingtext.util.Result
+import java.io.*
 
 class InvertedFileMergerImpl(
         private val serializer: InvertedFileSerializer = InvertedFileSerializerImplementation()
 ) : InvertedFileMerger {
 
-    override fun merge(parts: MutableIterable<HeaderAndInvertedFile>, outputFiles: HeaderAndInvertedFile): HeaderAndInvertedFile {
+    override fun merge(parts: MutableIterable<HeaderAndInvertedFile>, outputFiles: HeaderAndInvertedFile): Result<HeaderAndInvertedFile, IOException> {
         val process: IO<HeaderAndInvertedFile> = IO {
 
             val headerWriter = BufferedWriter(FileWriter(outputFiles.headerFile))
@@ -59,7 +57,7 @@ class InvertedFileMergerImpl(
             }
             outputFiles
         }
-        return process.attempt().ok().get()
+        return process.attempt()
     }
 
     fun getIndicesOfMinimalTerm(
@@ -80,7 +78,7 @@ class InvertedFileMergerImpl(
         return indicesOfMinimalTerms
     }
 
-    fun getHeaders(
+    private fun getHeaders(
             indices: List<Int>,
             identifiers: List<List<Pair<String, ReversedIndexIdentifier>>>
     ) : List<Pair<String, ReversedIndexIdentifier>> {
@@ -91,7 +89,7 @@ class InvertedFileMergerImpl(
         return result
     }
 
-    fun getInvertedParts(
+    private fun getInvertedParts(
             indices: List<Int>,
             files: List<RandomAccessFile>
     ) : List<RandomAccessFile> {
@@ -123,7 +121,7 @@ class InvertedFileMergerImpl(
         }
     }
 
-    fun getEntries(
+    private fun getEntries(
             partsIdentifiers: List<ReversedIndexIdentifier>,
             files: List<RandomAccessFile>
     ): IO<List<Entry>> {

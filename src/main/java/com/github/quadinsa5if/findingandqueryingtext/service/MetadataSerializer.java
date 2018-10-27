@@ -17,7 +17,7 @@ public interface MetadataSerializer {
      * @param metadata
      * @return Metadata file
      */
-    public Result<File, Exception> serialize(List<Metadata> metadata);
+    Result<File, Exception> serialize(List<Metadata> metadata);
 
     /**
      * Unserialize the metadata from a metadata file
@@ -25,7 +25,7 @@ public interface MetadataSerializer {
      * @param file
      * @return
      */
-    public IO<List<Metadata>> unserialize(FileReader file);
+    IO<List<Metadata>> unserialize(FileReader file);
 
     /**
      * Get metadata for a specific article
@@ -34,7 +34,7 @@ public interface MetadataSerializer {
      * @param articleId
      * @return
      */
-    public IO<Optional<Metadata>> unserialize(FileReader file, int articleId);
+    IO<Optional<Metadata>> unserialize(FileReader file, int articleId);
 
 
 }
