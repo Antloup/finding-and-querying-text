@@ -9,6 +9,7 @@ import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileMerger;
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
 import com.github.quadinsa5if.findingandqueryingtext.service.QuerySolver;
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.*;
+import com.github.quadinsa5if.findingandqueryingtext.tokenizer.DocumentParser;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 import org.apache.commons.cli.*;
 
@@ -17,7 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class App {
@@ -130,8 +130,16 @@ public class App {
 
     private static HeaderAndInvertedFile buildInvertedFile(Stream<Path> articlesFolder, File outputFile) {
         final InvertedFileSerializer serializer = new InvertedFileSerializerImplementation();
-        AbstractScorerImplementation scorer = new IdfTfScorerImplementation(articlesFolder, serializer);
-        List<HeaderAndInvertedFile> partitions = scorer.evaluate(1);
+
+        ScorerImplementation scorerVisitor = new ScorerImplementation(serializer, 10);
+        MetadataImplementation metadataVisitor = new MetadataImplementation();
+
+        DocumentParser parser = new DocumentParser(Arrays.asList(scorerVisitor, metadataVisitor));
+
+        File datasetFolder = new File("data");
+        parser.parse(datasetFolder.listFiles());
+
+        List<HeaderAndInvertedFile> partitions = scorerVisitor.getPartitions();
         final InvertedFileMerger merger = new InvertedFileMergerImplementation(serializer);
         final HeaderAndInvertedFile complete = merger.merge(partitions, new HeaderAndInvertedFile(new File(outputFile + "_header"), new File(outputFile + "_posting_lists")));
         return complete;

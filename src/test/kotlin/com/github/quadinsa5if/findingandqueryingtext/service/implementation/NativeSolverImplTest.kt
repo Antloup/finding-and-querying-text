@@ -1,6 +1,5 @@
 package com.github.quadinsa5if.findingandqueryingtext.service.implementation
 
-import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.MutableVocabulary
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl
@@ -17,29 +16,29 @@ import org.junit.runner.RunWith
 @RunWith(JUnitPlatform::class)
 object NativeSolverImplTest : Spek({
 
-  val d1 = ArticleId(1)
-  val d2 = ArticleId(2)
-  val d3 = ArticleId(3)
-  val d4 = ArticleId(4)
-  val d5 = ArticleId(5)
-  val d6 = ArticleId(6)
+  val d1 = 1
+  val d2 = 2
+  val d3 = 3
+  val d4 = 4
+  val d5 = 5
+  val d6 = 6
 
   val postingListT1 = listOf(
-      Entry(d2, .9f),
-      Entry(d5, .8f),
-      Entry(d6, .7f),
-      Entry(d4, .6f),
-      Entry(d1, .5f),
-      Entry(d3, .4f)
+      Entry(d2, .9),
+      Entry(d5, .8),
+      Entry(d6, .7),
+      Entry(d4, .6),
+      Entry(d1, .5),
+      Entry(d3, .4)
   )
 
   val postingListT2 = listOf(
-      Entry(d3, .85f),
-      Entry(d5, .8f),
-      Entry(d2, .75f),
-      Entry(d6, .74f),
-      Entry(d1, .74f),
-      Entry(d4, .7f)
+      Entry(d3, .85),
+      Entry(d5, .8),
+      Entry(d2, .75),
+      Entry(d6, .74),
+      Entry(d1, .74),
+      Entry(d4, .7)
   )
 
   val postingLists: MutableVocabulary = InMemoryVocabularyImpl()

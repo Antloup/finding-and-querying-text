@@ -98,7 +98,7 @@ public class InvertedFileMergerImplementation implements InvertedFileMerger {
             }
             final Pair<String, ReversedIndexIdentifier> aggregateTerm = new Pair(key, new ReversedIndexIdentifier(offset, length));
             final IO<List<Entry>> recomposedPostingList = getParts(terms.stream().map(it -> it.second).collect(Collectors.toList()), invertedFiles)
-                    .map(it -> it.stream().sorted((a, b) -> Float.compare(a.score, b.score)).collect(Collectors.toList()));
+                    .map(it -> it.stream().sorted((a, b) -> Double.compare(a.score, b.score)).collect(Collectors.toList()));
             recomposedPostingList.map(it -> serializer.writeEntries(it, new BufferedWriter(outputInvertedFile))).sync();
             serializer.writeReversedIndexIdentifier(Arrays.asList(aggregateTerm), new BufferedWriter(outputHeaderFile)).sync();
             return offset + length;

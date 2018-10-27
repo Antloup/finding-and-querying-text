@@ -5,9 +5,9 @@ import java.util.Objects;
 public class Entry {
 
     public final int articleId;
-    public final float score;
+    public final double score;
 
-    public Entry(int articleId, float score) {
+    public Entry(int articleId, double score) {
         this.articleId = articleId;
         this.score = score;
     }
@@ -17,7 +17,7 @@ public class Entry {
     }
 
     public double score() {
-        return (double) score;
+        return score;
     }
 
     @Override
@@ -33,7 +33,7 @@ public class Entry {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Entry entry = (Entry) o;
-        return Float.compare(entry.score, score) == 0 &&
+        return Double.compare(entry.score, score) == 0 &&
                 Objects.equals(articleId, entry.articleId);
     }
 
