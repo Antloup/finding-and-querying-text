@@ -1,5 +1,7 @@
 package com.github.quadinsa5if.findingandqueryingtext.service;
 
+import java.io.File;
+
 public interface DatasetVisitor {
 
     /**
@@ -33,4 +35,8 @@ public interface DatasetVisitor {
      */
     void onPassEnd(int currentPassNumber);
 
+    /**
+     * Called when a parsing pass will start
+     */
+    void onPassStart(File file, int currentPassNumber);
 }

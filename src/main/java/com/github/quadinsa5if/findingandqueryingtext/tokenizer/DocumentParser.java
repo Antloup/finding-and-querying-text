@@ -52,6 +52,12 @@ public class DocumentParser {
 
             for (File file : files) {
 
+                for (DatasetVisitor visitor : visitors) {
+                    if (currentPassNumber <= visitor.getTotalPassNumber()) {
+                        visitor.onPassStart(file, currentPassNumber);
+                    }
+                }
+
                 XMLEventReader reader = null;
                 try {
                     reader = XMLInputFactory.newFactory().createXMLEventReader(new FileInputStream(file));
