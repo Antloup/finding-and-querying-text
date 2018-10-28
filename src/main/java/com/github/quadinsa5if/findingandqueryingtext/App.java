@@ -6,11 +6,10 @@ import org.apache.commons.cli.*;
 public class App {
 
     public static void main(String[] args) {
-
-
+        final Options options = new Options();
         final HelpFormatter helpFormatter = new HelpFormatter();
         final CommandLineParser commandLineParser = new DefaultParser();
-        final Options options = new Options();
+
         final Option articleFolder = Option.builder("f")
                 .longOpt("article_folder")
                 .hasArg(true)
@@ -65,7 +64,8 @@ public class App {
                 .desc("add synonyms")
                 .build();
 
-        options.addOption(articleFolder)
+        options
+                .addOption(articleFolder)
                 .addOption(ouputFile)
                 .addOption(query)
                 .addOption(buildInvertedFile)
@@ -73,9 +73,10 @@ public class App {
                 .addOption(test)
                 .addOption(help)
                 .addOption(synonym);
+
         try {
             CommandLine commandLine = commandLineParser.parse(options, args);
-            Thread t = new Thread(new Runner(commandLine,options));
+            Thread t = new Thread(new Runner(commandLine));
             t.start();
             synchronized (t) {
                 t.wait();
@@ -87,6 +88,8 @@ public class App {
             System.err.println(e.getMessage());
         }
     }
+
+
 
 
 }
