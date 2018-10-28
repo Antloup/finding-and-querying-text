@@ -134,11 +134,14 @@ public class App {
 
         ScorerImplementation scorerVisitor = new ScorerImplementation(serializer, 10);
         MetadataImplementation metadataVisitor = new MetadataImplementation(metadataSerializer);
+        RandomIndexerImplementation randomIndexerVisitor = new RandomIndexerImplementation();
 
-        DocumentParser parser = new DocumentParser(Arrays.asList(scorerVisitor, metadataVisitor));
+        DocumentParser parser = new DocumentParser(Arrays.asList(scorerVisitor, metadataVisitor, randomIndexerVisitor));
 
         File datasetFolder = new File("data");
         parser.parse(datasetFolder.listFiles());
+
+        //HashMap<String, Vector<Integer>> termVectors = randomIndexerVisitor.getTermVectors();
 
         List<HeaderAndInvertedFile> partitions = scorerVisitor.getPartitions();
         final InvertedFileMerger merger = new InvertedFileMergerImplementation(serializer);

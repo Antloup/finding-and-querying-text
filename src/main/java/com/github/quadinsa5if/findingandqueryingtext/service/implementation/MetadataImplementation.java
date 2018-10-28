@@ -1,15 +1,12 @@
 package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 
-import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
 import com.github.quadinsa5if.findingandqueryingtext.model.ArticleHeader;
 import com.github.quadinsa5if.findingandqueryingtext.service.DatasetVisitor;
 import com.github.quadinsa5if.findingandqueryingtext.service.MetadataSerializer;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +31,7 @@ public class MetadataImplementation implements DatasetVisitor {
     }
 
     @Override
-    public void onArticleParseStart(int currentPassNumber) {
+    public void onArticleParseStart(int articleId, int currentPassNumber) {
 
     }
 
