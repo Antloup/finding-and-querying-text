@@ -72,10 +72,10 @@ public class MetadataSerializerImplementation extends Serializer implements Meta
     }
 
     @Override
-    public IO<Optional<ArticleHeader>> unserialize(FileReader file, int articleId) {
+    public IO<Optional<ArticleHeader>> unserialize(File file, int articleId) {
         return () -> {
             String line;
-            final LineNumberReader lineReader = new LineNumberReader(file);
+            final LineNumberReader lineReader = new LineNumberReader(new FileReader(file));
             while ((line = lineReader.readLine()) != null) {
                 String[] attributes = line.split(String.valueOf(PARTS_DELIMITER));
                 if (attributes.length != 2) {
@@ -87,4 +87,5 @@ public class MetadataSerializerImplementation extends Serializer implements Meta
             return Optional.empty();
         };
     }
+
 }

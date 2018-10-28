@@ -130,9 +130,10 @@ public class App {
 
     private static HeaderAndInvertedFile buildInvertedFile(Stream<Path> articlesFolder, File outputFile) {
         final InvertedFileSerializer serializer = new InvertedFileSerializerImplementation();
+        final MetadataSerializerImplementation metadataSerializer = new MetadataSerializerImplementation();
 
         ScorerImplementation scorerVisitor = new ScorerImplementation(serializer, 10);
-        MetadataImplementation metadataVisitor = new MetadataImplementation();
+        MetadataImplementation metadataVisitor = new MetadataImplementation(metadataSerializer);
 
         DocumentParser parser = new DocumentParser(Arrays.asList(scorerVisitor, metadataVisitor));
 

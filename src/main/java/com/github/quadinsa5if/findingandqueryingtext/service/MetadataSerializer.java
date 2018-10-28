@@ -34,7 +34,6 @@ public interface MetadataSerializer {
      * @param articleId
      * @return
      */
-    public IO<Optional<ArticleHeader>> unserialize(FileReader file, int articleId);
-
+    public IO<Optional<ArticleHeader>> unserialize(File file, int articleId);
 
 }
