@@ -22,8 +22,9 @@ object ParsingTest : Spek({
             val metadataSerializer = MetadataSerializerImplementation()
             val scorerVisitor = ScorerImplementation(serializer, 10)
             val metadataVisitor = MetadataImplementation(metadataSerializer)
+            val randomIndexerVisitor = RandomIndexerImplementation()
 
-            val parser = DocumentParser(Arrays.asList(scorerVisitor, metadataVisitor))
+            val parser = DocumentParser(Arrays.asList(scorerVisitor, metadataVisitor, randomIndexerVisitor))
             val datasetFiles: Array<File> = arrayOf(File("test_data/mini_bible"))
             parser.parse(datasetFiles)
 

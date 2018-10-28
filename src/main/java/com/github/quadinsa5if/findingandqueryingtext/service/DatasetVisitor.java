@@ -14,7 +14,7 @@ public interface DatasetVisitor {
     /**
      * Called when an article parsing will begin
      */
-    void onArticleParseStart(int currentPassNumber);
+    void onArticleParseStart(int articleId, int currentPassNumber);
 
     /**
      * Called when the parser read a term in an article

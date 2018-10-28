@@ -115,7 +115,7 @@ public class DocumentParser {
                         articleId = Integer.valueOf(reader.getElementText().trim());
                         for (DatasetVisitor visitor : visitors) {
                             if (currentPassNumber <= visitor.getTotalPassNumber()) {
-                                visitor.onArticleParseStart(currentPassNumber);
+                                visitor.onArticleParseStart(articleId, currentPassNumber);
                             }
                         }
 

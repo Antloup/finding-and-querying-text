@@ -44,7 +44,7 @@ public class ScorerImplementation implements DatasetVisitor {
     }
 
     @Override
-    public void onArticleParseStart(int currentPassNumber) {
+    public void onArticleParseStart(int articleId, int currentPassNumber) {
 
         if (currentPassNumber == 1) {
             numberOfArticles++;
