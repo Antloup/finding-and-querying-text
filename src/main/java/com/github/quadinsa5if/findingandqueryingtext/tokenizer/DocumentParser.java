@@ -1,7 +1,6 @@
 package com.github.quadinsa5if.findingandqueryingtext.tokenizer;
 
-import com.github.quadinsa5if.findingandqueryingtext.model.Article;
-import com.github.quadinsa5if.findingandqueryingtext.service.implementation.AbstractScorerImplementation;
+import com.github.quadinsa5if.findingandqueryingtext.service.DatasetVisitor;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -11,45 +10,101 @@ import javax.xml.stream.events.XMLEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DocumentParser {
 
+    private static char[] ESCAPED = new char[]{
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', // Digits
+            '?', ',', '.', ';', '?', ':', '!', '\'', '"', '(', ')', '{', '}', '[', ']', '$', // Punctuation
+            '&', // Special character
+            '+', '-', '*', '%', '=' // Operators
+    };
+    private static String[] WHITE_SPACES = new String[]{" ", "\n", "\r\n"};
+
     private static final String DOCUMENT_ID = "DOCID";
     private static final String DOCUMENT = "DOC";
+    //  private static final String HEADER = "HEADLINE";
     private static final String PARAGRAPH = "P";
 
-    private final XMLEventReader reader;
-    private final AbstractScorerImplementation scorer;
+    private final List<DatasetVisitor> visitors;
+    private int currentPassNumber;
 
-    public DocumentParser(File document, AbstractScorerImplementation scorer) throws XMLStreamException, FileNotFoundException {
-        reader = XMLInputFactory.newFactory().createXMLEventReader(new FileInputStream(document));
-        this.scorer = scorer;
+    public DocumentParser(List<DatasetVisitor> visitors) {
+        this.visitors = visitors;
+        currentPassNumber = 1;
     }
 
-    public void parse(
-            char[] ignored,
-            String[] delimiters) throws XMLStreamException {
-        while (reader.hasNext()) {
-            final XMLEvent event = reader.nextEvent();
-            if (event.isStartElement() && event.asStartElement().getName().getLocalPart().equals(DOCUMENT)) {
-                parseArticle(reader, ignored, delimiters);
+    public void parse(File[] files) {
+
+        List<XMLEventReader> readers = new ArrayList<>();
+
+        int totalPassNumber = 0;
+
+        for (DatasetVisitor visitor : visitors) {
+            totalPassNumber = Math.max(totalPassNumber, visitor.getTotalPassNumber());
+        }
+
+        for (currentPassNumber = 1; currentPassNumber <= totalPassNumber; currentPassNumber++) {
+
+            for (File file : files) {
+
+                for (DatasetVisitor visitor : visitors) {
+                    if (currentPassNumber <= visitor.getTotalPassNumber()) {
+                        visitor.onPassStart(file, currentPassNumber);
+                    }
+                }
+
+                XMLEventReader reader = null;
+                try {
+                    reader = XMLInputFactory.newFactory().createXMLEventReader(new FileInputStream(file));
+                } catch (XMLStreamException | FileNotFoundException e) {
+                    e.printStackTrace();
+                    continue;
+                }
+
+                while (reader.hasNext()) {
+                    final XMLEvent event;
+                    try {
+                        event = reader.nextEvent();
+
+                        if (event.isStartElement() && event.asStartElement().getName().getLocalPart().equals(DOCUMENT)) {
+                            parseArticle(reader, ESCAPED, WHITE_SPACES);
+                        }
+                    } catch (XMLStreamException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                for (DatasetVisitor visitor : visitors) {
+                    if (currentPassNumber <= visitor.getTotalPassNumber()) {
+                        visitor.onPassEnd(currentPassNumber);
+                    }
+                }
             }
         }
+
     }
+
 
     private void parseArticle(
             final XMLEventReader reader,
             char[] ignored,
             String[] delimiters
     ) throws XMLStreamException {
-        int id = 0;
+        int articleId = 0;
         while (reader.hasNext()) {
             final XMLEvent event = reader.nextEvent();
             if (event.isEndElement() && event.asEndElement().getName().getLocalPart().equals(DOCUMENT)) {
-                final int article = id;
-                scorer.onArticleParseEnd(article);
+
+                for (DatasetVisitor visitor : visitors) {
+                    if (currentPassNumber <= visitor.getTotalPassNumber()) {
+                        visitor.onArticleParseEnd(articleId, currentPassNumber);
+                    }
+                }
                 return;
             }
             if (event.isStartElement()) {
@@ -57,12 +112,21 @@ public class DocumentParser {
                 final String elementName = element.getName().getLocalPart();
                 switch (elementName) {
                     case DOCUMENT_ID:
-                        id = Integer.valueOf(reader.getElementText().trim());
-                        scorer.onArticleParseStart();
+                        articleId = Integer.valueOf(reader.getElementText().trim());
+                        for (DatasetVisitor visitor : visitors) {
+                            if (currentPassNumber <= visitor.getTotalPassNumber()) {
+                                visitor.onArticleParseStart(currentPassNumber);
+                            }
+                        }
+
                         break;
                     case PARAGRAPH:
-                        for (String word : split(reader.getElementText(), ignored, delimiters)) {
-                            scorer.onTermRead(word);
+                        for (String term : split(reader.getElementText(), ignored, delimiters)) {
+                            for (DatasetVisitor visitor : visitors) {
+                                if (currentPassNumber <= visitor.getTotalPassNumber()) {
+                                    visitor.onTermRead(term, currentPassNumber);
+                                }
+                            }
                         }
                         break;
                     default:

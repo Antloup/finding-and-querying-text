@@ -16,8 +16,8 @@ public class Entry {
         return articleId;
     }
 
-    public double score() {
-        return (double) score;
+    public float score() {
+        return score;
     }
 
     @Override

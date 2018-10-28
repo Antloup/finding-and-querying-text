@@ -1,8 +1,7 @@
 package com.github.quadinsa5if.findingandqueryingtext.service.implementation
 
-import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId
+import com.github.quadinsa5if.findingandqueryingtext.model.ArticleHeader
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry
-import com.github.quadinsa5if.findingandqueryingtext.model.Metadata
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
@@ -23,11 +22,11 @@ object MetadataSerializerImplementationTest : Spek({
     testDirectory.run { deleteRecursively(); delete() }
     val serializer = MetadataSerializerImplementation(TEST_FOLDER_NAME)
 
-    val metadata1 = Metadata(1, "path1")
-    val metadata2 = Metadata(2, "path2")
-    val metadata3 = Metadata(3, "path3")
-    val metadata4 = Metadata(4, "path4")
-    val metadata5 = Metadata(5, "path5")
+    val metadata1 = ArticleHeader(1, "path1")
+    val metadata2 = ArticleHeader(2, "path2")
+    val metadata3 = ArticleHeader(3, "path3")
+    val metadata4 = ArticleHeader(4, "path4")
+    val metadata5 = ArticleHeader(5, "path5")
 
     val metadataList = listOf(
             metadata1,

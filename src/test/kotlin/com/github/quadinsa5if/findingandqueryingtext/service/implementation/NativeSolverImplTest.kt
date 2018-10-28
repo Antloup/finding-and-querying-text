@@ -1,6 +1,5 @@
 package com.github.quadinsa5if.findingandqueryingtext.service.implementation
 
-import com.github.quadinsa5if.findingandqueryingtext.model.ArticleId
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.MutableVocabulary
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl
@@ -17,12 +16,12 @@ import org.junit.runner.RunWith
 @RunWith(JUnitPlatform::class)
 object NativeSolverImplTest : Spek({
 
-  val d1 = ArticleId(1)
-  val d2 = ArticleId(2)
-  val d3 = ArticleId(3)
-  val d4 = ArticleId(4)
-  val d5 = ArticleId(5)
-  val d6 = ArticleId(6)
+  val d1 = 1
+  val d2 = 2
+  val d3 = 3
+  val d4 = 4
+  val d5 = 5
+  val d6 = 6
 
   val postingListT1 = listOf(
       Entry(d2, .9f),

@@ -15,7 +15,7 @@ public interface MetadataSerializer {
      * Serialize metadatas and write to the disk
      *
      * @param metadata
-     * @return ArticleHeader file
+     * @return Metadata file
      */
     Result<File, Exception> serialize(List<Metadata> metadata);
 
