@@ -23,6 +23,9 @@ import java.util.stream.Stream;
 
 public class App {
 
+    static String headerSuffix = "_header";
+    static String postingListSuffix = "_posting_lists";
+
     public static void main(String[] args) {
         final Options options = new Options();
 
@@ -50,7 +53,7 @@ public class App {
 
         final Option query = Option.builder("q")
                 .longOpt("query")
-                .hasArg(true)
+                .hasArgs()
                 .argName("terms")
                 .desc("terms query")
                 .valueSeparator(':')
@@ -87,7 +90,7 @@ public class App {
         final CommandLineParser commandLineParser = new DefaultParser();
         try {
             CommandLine commandLine = commandLineParser.parse(options, args);
-            final IO<Stream<Path>> dataFolder = listFiles(commandLine.getOptionValue(articleFolder.getOpt()));
+            final String dataFolder = commandLine.getOptionValue(articleFolder.getOpt());
             final String outputFileName = commandLine.getOptionValue(ouputFile.getOpt());
             final File outputFile = new File(outputFileName);
 
@@ -97,10 +100,7 @@ public class App {
             final boolean runTests = commandLine.hasOption(test.getOpt());
 
             if (buildIndex) {
-                dataFolder.map(folder -> {
-                    buildInvertedFile(folder, outputFile);
-                    return new Unit();
-                }).sync();
+                buildInvertedFile(dataFolder, outputFile).sync();
             }
             if (hasQuery) {
                 String[] termsAndK = commandLine.getOptionValues(query.getOpt());
@@ -108,16 +108,21 @@ public class App {
                 String[] terms = new String[termsAndK.length - 1];
                 System.arraycopy(termsAndK, 1, terms, 0, termsAndK.length - 1);
                 System.out.println("Running query");
-                final FileReader header = open(outputFileName + "_header")
-                        .expect("Unknown file " + outputFileName + "_header");
-                final RandomAccessFile invertedIndex = openRandom(outputFileName + "_posting_lists")
-                        .expect("Unknown file " + outputFileName + "_posting_lists");
+
+                final FileReader header = open(outputFileName + headerSuffix)
+                        .expect("Unknown file " + outputFileName + headerSuffix);
+                final RandomAccessFile invertedIndex = openRandom(outputFileName + postingListSuffix)
+                        .expect("Unknown file " + outputFileName + postingListSuffix);
+
                 final Vocabulary inDiscVoc = new InDiskVocabularyImpl(header, invertedIndex, 10);
                 final QuerySolver solver = new NativeSolverImpl(inDiscVoc);
-                System.out.println(solver.answer(terms, k));
+
+                for(int articleId : solver.answer(terms, k)) {
+                    System.out.println(articleId);
+                }
             }
             if (runTests) {
-                System.out.println("Runnin tests");
+                System.out.println("Running tests");
                 // Todo: test build (gradle)
             }
 
@@ -130,25 +135,23 @@ public class App {
         }
     }
 
-    private static Result<HeaderAndInvertedFile, IOException> buildInvertedFile(Stream<Path> articlesFolder, File outputFile) {
+    private static IO<HeaderAndInvertedFile> buildInvertedFile(String datasetFolder, File outputFile) {
         final InvertedFileSerializer serializer = new InvertedFileSerializerImplementation();
+        final ScorerImplementation scorerVisitor = new ScorerImplementation(serializer, 1);
+        final MetadataImplementation metadataVisitor = new MetadataImplementation();
 
-        ScorerImplementation scorerVisitor = new ScorerImplementation(serializer, 10);
-        MetadataImplementation metadataVisitor = new MetadataImplementation();
-
-        DocumentParser parser = new DocumentParser(Arrays.asList(scorerVisitor, metadataVisitor));
-
-        File datasetFolder = new File("data");
-        parser.parse(datasetFolder.listFiles());
+        final DocumentParser parser = new DocumentParser(Arrays.asList(scorerVisitor, metadataVisitor));
+        parser.parse(new File(datasetFolder).listFiles());
 
         List<HeaderAndInvertedFile> partitions = scorerVisitor.getPartitions();
-        final InvertedFileMerger merger = new InvertedFileMergerImplementation(serializer);
-        final HeaderAndInvertedFile complete = merger.merge(partitions, new HeaderAndInvertedFile(new File(outputFile + "_header"), new File(outputFile + "_posting_lists")));
-        return complete;
-    }
+        final InvertedFileMerger merger = new InvertedFileMergerImpl(serializer);
 
-    public static void dev() {
+        final File outputHeaderFile = new File(outputFile + headerSuffix);
+        final File outputPostingListFile = new File(outputFile + postingListSuffix);
 
+        final HeaderAndInvertedFile hdrAndInvOutputFile = new HeaderAndInvertedFile(outputHeaderFile, outputPostingListFile);
+
+        return merger.merge(partitions, hdrAndInvOutputFile);
     }
 
     static Result<FileReader, FileNotFoundException> open(String filePath) {
@@ -165,10 +168,6 @@ public class App {
         } catch (FileNotFoundException e) {
             return Result.err(e);
         }
-    }
-
-    static IO<Stream<Path>> listFiles(String path) {
-        return () -> Files.list(Paths.get(path));
     }
 
 }
