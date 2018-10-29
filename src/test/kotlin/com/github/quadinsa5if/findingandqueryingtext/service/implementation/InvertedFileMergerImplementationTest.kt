@@ -2,7 +2,7 @@ package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 
 import com.github.quadinsa5if.findingandqueryingtext.lang.Pair
 import com.github.quadinsa5if.findingandqueryingtext.model.ReversedIndexIdentifier
-import com.github.rloic.quadinsa5if.findindandqueryingtext.InvertedFileMergerImpl
+import com.github.rloic.quadinsa5if.findindandqueryingtext.service.implementation.InvertedFileMergerImpl
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import org.jetbrains.spek.api.Spek

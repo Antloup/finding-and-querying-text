@@ -42,7 +42,7 @@ public abstract class Result<T, E extends Exception> {
     public abstract T unwrap();
 
     public abstract <R> R fold(@NotNull Function<T, R> ifOk, @NotNull Function<E, R> ifErr);
-    public abstract void foldC(@NotNull Consumer<T> ifOk, @NotNull Consumer<E> ifErr);
+    public abstract void when(@NotNull Consumer<T> ifOk, @NotNull Consumer<E> ifErr);
 
     public abstract <R> Result<R, E> map(@NotNull Function<T, R> map);
 
@@ -98,7 +98,7 @@ public abstract class Result<T, E extends Exception> {
         }
 
         @Override
-        public void foldC(@NotNull Consumer<T> ifOk, @NotNull Consumer<E> ifErr) {
+        public void when(@NotNull Consumer<T> ifOk, @NotNull Consumer<E> ifErr) {
             ifOk.accept(ok);
         }
 
@@ -158,7 +158,7 @@ public abstract class Result<T, E extends Exception> {
         }
 
         @Override
-        public void foldC(@NotNull Consumer<T> ifOk, @NotNull Consumer<E> ifErr) {
+        public void when(@NotNull Consumer<T> ifOk, @NotNull Consumer<E> ifErr) {
             ifErr.accept(err);
         }
 

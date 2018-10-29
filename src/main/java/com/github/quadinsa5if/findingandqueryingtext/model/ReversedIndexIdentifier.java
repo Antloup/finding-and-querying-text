@@ -16,4 +16,9 @@ public class ReversedIndexIdentifier {
     this.length = length;
     this.term  = term;
   }
+
+  @Override
+  public String toString() {
+    return "ReversedIndexIdentifier(" + offset + ", " + length + ", " + term + ")";
+  }
 }

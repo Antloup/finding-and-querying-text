@@ -1,0 +1,23 @@
+<ROOT>
+    <DOC>
+        <DOCNO>LA010189-0004</DOCNO>
+        <DOCID>1</DOCID>
+        <TEXT>
+            <P>Hello World!</P>
+        </TEXT>
+    </DOC>
+    <DOC>
+        <DOCNO>LA010189-0004</DOCNO>
+        <DOCID>2</DOCID>
+        <TEXT>
+            <P>Hello Jean!</P>
+        </TEXT>
+    </DOC>
+    <DOC>
+        <DOCNO>LA010189-0004</DOCNO>
+        <DOCID>3</DOCID>
+        <TEXT>
+            <P>I love the world!</P>
+        </TEXT>
+    </DOC>
+</ROOT>

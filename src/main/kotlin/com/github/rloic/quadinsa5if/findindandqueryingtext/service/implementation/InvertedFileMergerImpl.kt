@@ -1,4 +1,4 @@
-package com.github.rloic.quadinsa5if.findindandqueryingtext
+package com.github.rloic.quadinsa5if.findindandqueryingtext.service.implementation
 
 import com.github.quadinsa5if.findingandqueryingtext.lang.IO
 import com.github.quadinsa5if.findingandqueryingtext.lang.Pair
@@ -8,20 +8,19 @@ import com.github.quadinsa5if.findingandqueryingtext.model.ReversedIndexIdentifi
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileMerger
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.InvertedFileSerializerImplementation
-import java.io.BufferedWriter
-import java.io.FileReader
-import java.io.FileWriter
-import java.io.RandomAccessFile
+import com.github.quadinsa5if.findingandqueryingtext.util.Result
+import java.io.*
+import java.nio.file.Files
 
 class InvertedFileMergerImpl(
         private val serializer: InvertedFileSerializer = InvertedFileSerializerImplementation()
 ) : InvertedFileMerger {
 
-    override fun merge(parts: MutableIterable<HeaderAndInvertedFile>, outputFiles: HeaderAndInvertedFile): HeaderAndInvertedFile {
+    override fun merge(parts: MutableIterable<HeaderAndInvertedFile>, outputFiles: HeaderAndInvertedFile): IO<HeaderAndInvertedFile> {
         val process: IO<HeaderAndInvertedFile> = IO {
 
-            val headerWriter = BufferedWriter(FileWriter(outputFiles.headerFile))
-            val postingListWriter = BufferedWriter(FileWriter(outputFiles.invertedFile))
+            val headerWriter = Files.newBufferedWriter(outputFiles.headerFile.toPath())
+            val postingListWriter = Files.newBufferedWriter(outputFiles.invertedFile.toPath())
 
             val headers = mutableListOf<MutableList<Pair<String, ReversedIndexIdentifier>>>()
             val invertedFiles = mutableListOf<RandomAccessFile>()
@@ -44,22 +43,23 @@ class InvertedFileMergerImpl(
                 val currentHeaders = getHeaders(currentIndices, headers)
                 val invertedParts = getInvertedParts(currentIndices, invertedFiles)
 
-                val entryList = getEntries(currentHeaders.map { it.second }, invertedParts)
+                val entryList = getEntries(currentHeaders.map { it.second }, invertedParts).sync()
                 val term = currentHeaders[0].first!!
                 val length = currentHeaders.sumBy { it.second.length }
                 val termAndReversedIndexIndexIdentifier = Pair(term, ReversedIndexIdentifier(offset, length))
 
-                entryList.map {
-                    serializer.writeEntries(it, postingListWriter)
-                }.then {
-                    serializer.writeReversedIndexIdentifier(listOf(termAndReversedIndexIndexIdentifier), headerWriter)
-                }.sync()
+                serializer.writeReversedIndexIdentifier(listOf(termAndReversedIndexIndexIdentifier), headerWriter).sync()
+                serializer.writeEntries(entryList, postingListWriter).sync()
+
                 offset += length
                 increments(currentIndices, headers, invertedFiles)
             }
+
+            headerWriter.close()
+            postingListWriter.close()
             outputFiles
         }
-        return process.attempt().ok().get()
+        return process
     }
 
     fun getIndicesOfMinimalTerm(
@@ -80,7 +80,7 @@ class InvertedFileMergerImpl(
         return indicesOfMinimalTerms
     }
 
-    fun getHeaders(
+    private fun getHeaders(
             indices: List<Int>,
             identifiers: List<List<Pair<String, ReversedIndexIdentifier>>>
     ) : List<Pair<String, ReversedIndexIdentifier>> {
@@ -91,7 +91,7 @@ class InvertedFileMergerImpl(
         return result
     }
 
-    fun getInvertedParts(
+    private fun getInvertedParts(
             indices: List<Int>,
             files: List<RandomAccessFile>
     ) : List<RandomAccessFile> {
@@ -123,7 +123,7 @@ class InvertedFileMergerImpl(
         }
     }
 
-    fun getEntries(
+    private fun getEntries(
             partsIdentifiers: List<ReversedIndexIdentifier>,
             files: List<RandomAccessFile>
     ): IO<List<Entry>> {

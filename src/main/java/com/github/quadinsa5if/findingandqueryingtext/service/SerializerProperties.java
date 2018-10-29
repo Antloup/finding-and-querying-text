@@ -1,20 +1,20 @@
 package com.github.quadinsa5if.findingandqueryingtext.service;
 
-public abstract class Serializer {
+public abstract class SerializerProperties {
 
-    public Serializer() {
+    public SerializerProperties() {
     }
 
     /**
      * @param fileFolder : path of the folder (without '/' at the end)
      */
-    public Serializer(String fileFolder) {
+    public SerializerProperties(String fileFolder) {
         this.fileFolder = fileFolder;
     }
 
-    public static final String METADATA_FILE = "/mf";
-    public static final String INVERTED_FILE = "/if";
-    public static final String HEADER_FILE = "/hf";
+    public static final String METADATA_FILE = "mf";
+    public static final String INVERTED_FILE = "if";
+    public static final String HEADER_FILE = "hf";
     protected String fileFolder = "fileTest/novb";
 
     public static final char PARTS_DELIMITER = ':';

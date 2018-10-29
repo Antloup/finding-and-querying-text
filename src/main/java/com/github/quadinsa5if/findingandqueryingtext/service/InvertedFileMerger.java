@@ -1,6 +1,10 @@
 package com.github.quadinsa5if.findingandqueryingtext.service;
 
+import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
 import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile;
+import com.github.quadinsa5if.findingandqueryingtext.util.Result;
+
+import java.io.IOException;
 
 public interface InvertedFileMerger {
 
@@ -10,6 +14,6 @@ public interface InvertedFileMerger {
    * @param outputFiles
    * @return The merged file
    */
-  HeaderAndInvertedFile merge(Iterable<HeaderAndInvertedFile> parts, HeaderAndInvertedFile outputFiles);
+  IO<HeaderAndInvertedFile> merge(Iterable<HeaderAndInvertedFile> parts, HeaderAndInvertedFile outputFiles);
 
 }

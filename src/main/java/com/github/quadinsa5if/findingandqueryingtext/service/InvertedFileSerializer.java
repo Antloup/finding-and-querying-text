@@ -23,7 +23,10 @@ public interface InvertedFileSerializer {
      * @param vocabulary The InMemoryVocabularyImpl to serialize
      * @return The while on the disk
      */
-    Result<HeaderAndInvertedFile, Exception> serialize(InMemoryVocabularyImpl vocabulary);
+    IO<HeaderAndInvertedFile> serialize(
+            InMemoryVocabularyImpl vocabulary,
+            HeaderAndInvertedFile ouputFile
+    );
 
     IO<Integer> writeEntries(List<Entry> entries, BufferedWriter writer);
     IO<Unit> writeReversedIndexIdentifier(List<Pair<String, ReversedIndexIdentifier>> reversedIndexIdentifiers, BufferedWriter writer);

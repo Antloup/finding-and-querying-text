@@ -7,58 +7,45 @@ import java.util.*;
 
 public class RandomIndexerImplementation implements DatasetVisitor {
 
-    private HashMap<Integer, Vector<Integer>> documentVectors;
-    private HashMap<String, Vector<Integer>> termVectors;
 
+    private static final int VECTOR_SIZE = 100;
+    // Important: Must be even
+    private static final int NON_ZERO_ELEMENTS = 20;
+
+
+    private Map<Integer, int[]> documentVectors;
+    private Map<String, int[]> termVectors;
     private List<Integer> nonZeroIndexes;
-
-    private final int VECTOR_SIZE = 100;
-    private final int NON_ZERO_ELEMENTS = 20;
-
-
     private int currentArticleId;
 
     public RandomIndexerImplementation() {
         documentVectors = new HashMap<>();
         termVectors = new HashMap<>();
 
-        nonZeroIndexes = new ArrayList<>();
-
-        for(int i = 0; i < VECTOR_SIZE; i++) {
+        nonZeroIndexes = new ArrayList<>(VECTOR_SIZE);
+        for (int i = 0; i < VECTOR_SIZE; i++) {
             nonZeroIndexes.add(i);
         }
     }
 
-    private Vector<Integer> createRandomVector() {
-
-        Vector<Integer> vector = createZeroVector();
-
+    private int[] createRandomVector() {
+        int[] vector = createZeroVector();
         Collections.shuffle(nonZeroIndexes);
-
-        for(int i = 0; i < NON_ZERO_ELEMENTS; i++) {
+        for (int i = 0; i < NON_ZERO_ELEMENTS; i++) {
             int k = nonZeroIndexes.get(i);
-            vector.setElementAt((i%2 == 0) ? 1 : -1, k);
+            vector[k] = (i % 2 == 0) ? 1 : -1;
         }
-
         return vector;
     }
 
-    private Vector<Integer> createZeroVector() {
-
-        Vector<Integer> vector = new Vector(VECTOR_SIZE);
-
-        for(int i = 0; i < VECTOR_SIZE; i++) {
-            vector.addElement(0);
-        }
-
-        return vector;
+    private int[] createZeroVector() {
+        return new int[VECTOR_SIZE];
     }
 
-    private void addVector(Vector<Integer> target, Vector<Integer> with) {
-
-        for(int i = 0; i < VECTOR_SIZE; i++) {
-            int newValue = target.get(i) + with.get(i);
-            target.setElementAt(newValue, i);
+    private void addInPlace(int[] target, int[] other) {
+        assert target.length == other.length;
+        for (int i = 0; i < target.length; i++) {
+            target[i] += other[i];
         }
     }
 
@@ -68,39 +55,32 @@ public class RandomIndexerImplementation implements DatasetVisitor {
     }
 
     @Override
-    public void onArticleParseStart(int articleId, int currentPassNumber) {
-        documentVectors.put(articleId, createRandomVector());
-
+    public void onOpeningArticle(int articleId, int currentPassNumber) {
         currentArticleId = articleId;
+        if (!documentVectors.containsKey(articleId)) {
+            documentVectors.put(articleId, createRandomVector());
+        }
     }
 
     @Override
     public void onTermRead(String term, int currentPassNumber) {
-
-        if(!termVectors.containsKey(term)) {
-            termVectors.put(term, createZeroVector());
-        }
-
-        addVector(termVectors.get(term), documentVectors.get(currentArticleId));
-
+        int[] termVector = termVectors.putIfAbsent(term, createRandomVector());
+        addInPlace(termVector, documentVectors.get(currentArticleId));
     }
 
-    public HashMap<String, Vector<Integer>> getTermVectors() {
+    public Map<String, int[]> getTermVectors() {
         return termVectors;
     }
 
     @Override
-    public void onArticleParseEnd(int articleId, int currentPassNumber) {
-
+    public void onClosingArticle(int articleId, int currentPassNumber) {
     }
 
     @Override
-    public void onPassEnd(int currentPassNumber) {
-
+    public void onEndingPass(int currentPassNumber) {
     }
 
     @Override
-    public void onPassStart(File file, int currentPassNumber) {
-
+    public void onOpeningFile(File file, int currentPassNumber) {
     }
 }
