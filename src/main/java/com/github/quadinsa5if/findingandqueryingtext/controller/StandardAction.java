@@ -73,7 +73,7 @@ public class StandardAction {
 
     }
 
-    private IO<HeaderAndInvertedFile> buildInvertedFile(
+    public IO<HeaderAndInvertedFile> buildInvertedFile(
             File dataSetFolder,
             HeaderAndInvertedFile outputFile,
             int batchSize

@@ -58,6 +58,7 @@ public class Runner {
             case TESTS:
                 break;
             case BENCHMARK:
+                benchmarkAction.run();
                 break;
             case PRINT_HELP:
                 helperAction.run(options);

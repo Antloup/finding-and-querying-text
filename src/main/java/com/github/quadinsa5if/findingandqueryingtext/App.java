@@ -18,7 +18,6 @@ public class App {
                 .hasArg(true)
                 .argName("article folder")
                 .desc("the article folder")
-                .required()
                 .build();
 
         final Option outputFile = Option.builder(OUTPUT_FILE.abbreviate)
@@ -26,7 +25,6 @@ public class App {
                 .hasArg(true)
                 .argName("output file")
                 .desc("the inverted index ouput file")
-                .required()
                 .build();
 
         final Option buildInvertedFile = Option.builder(BUILD_INVERTED_INDEX.abbreviate)
