@@ -37,5 +37,4 @@ public interface MetadataSerializer {
      */
     IO<Optional<ArticleHeader>> unserialize(FileReader file, int articleId);
 
-
 }

@@ -80,4 +80,5 @@ public class MetadataSerializerImplementation extends SerializerProperties imple
             return Optional.empty();
         };
     }
+
 }

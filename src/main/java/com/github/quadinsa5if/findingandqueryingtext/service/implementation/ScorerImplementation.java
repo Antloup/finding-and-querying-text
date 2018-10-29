@@ -23,7 +23,6 @@ public class ScorerImplementation implements DatasetVisitor {
 
     private Map<String, Float> numberOfArticlesContainingTerm;
     private Map<String, Float> termsFrequencyInCurrentArticle;
-    private Map<String, Float> idf;
     private int numberOfArticles;
     private int outputsNumber = 0;
 
@@ -37,7 +36,6 @@ public class ScorerImplementation implements DatasetVisitor {
         this.numberOfArticles = 0;
         this.numberOfArticlesContainingTerm = new HashMap<>();
         this.termsFrequencyInCurrentArticle = new HashMap<>();
-        this.idf = new HashMap<>();
         this.currentIndexInBatch = 0;
 
         final File tmpDir = new File("tmp");
@@ -54,7 +52,7 @@ public class ScorerImplementation implements DatasetVisitor {
     }
 
     @Override
-    public void onArticleParseStart(int currentPassNumber) {
+    public void onOpeningArticle(int articleId, int currentPassNumber) {
 
         if (currentPassNumber == 1) {
             numberOfArticles++;
@@ -86,7 +84,7 @@ public class ScorerImplementation implements DatasetVisitor {
     }
 
     @Override
-    public void onArticleParseEnd(int articleId, int currentPassNumber) {
+    public void onClosingArticle(int articleId, int currentPassNumber) {
         if (currentPassNumber == 2) {
 
             for (String term : termsFrequencyInCurrentArticle.keySet()) {
@@ -106,12 +104,11 @@ public class ScorerImplementation implements DatasetVisitor {
     }
 
     @Override
-    public void onPassEnd(int currentPassNumber) {
+    public void onEndingPass(int currentPassNumber) {
     }
 
     @Override
-    public void onPassStart(File file, int currentPassNumber) {
-
+    public void onOpeningFile(File file, int currentPassNumber) {
     }
 
     /**

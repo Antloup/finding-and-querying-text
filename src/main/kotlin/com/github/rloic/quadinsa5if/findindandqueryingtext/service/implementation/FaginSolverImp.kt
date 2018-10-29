@@ -11,11 +11,9 @@ typealias ArticleId = Int
 typealias Score = Float
 typealias ScoreMatrix = MutableMap<ArticleId, MutableMap<Term, Score>>
 
-class FaginSolverImp(
-        private val vocabulary: Vocabulary
-) : QuerySolver {
+class FaginSolverImp : QuerySolver {
 
-    override fun answer(terms: Array<String>, k: Int): Iter<Int> {
+    override fun answer(vocabulary: Vocabulary, terms: Array<String>, k: Int): Iter<Int> {
         val scoreSortEntries = mutableMapOf<Term, MutableList<Entry>>()
         val randomAccessEntries = mutableMapOf<Term, MutableMap<ArticleId, Entry>>()
 

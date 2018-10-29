@@ -14,7 +14,7 @@ import org.junit.platform.runner.JUnitPlatform
 import org.junit.runner.RunWith
 
 @RunWith(JUnitPlatform::class)
-object NativeSolverImplTest : Spek({
+object NaiveSolverImplTest : Spek({
 
   val d1 = 1
   val d2 = 2
@@ -46,10 +46,10 @@ object NativeSolverImplTest : Spek({
   postingListT2.forEach { postingLists.putEntry("t2", it) }
 
 
-  given("a native solver") {
-    val solver: QuerySolver = NativeSolverImpl(postingLists)
+  given("a naive solver") {
+    val solver: QuerySolver = NaiveSolverImpl()
     on("answering with parameters: terms=[\"t1\", \"t2\"], k=3") {
-      val answer = solver.answer(arrayOf("t1", "t2"), 3)
+      val answer = solver.answer(postingLists, arrayOf("t1", "t2"), 3)
       val first = answer.next();
       it("first result should be some") {
         assertThat("first result is some", first.isPresent, equalTo(true))
@@ -78,7 +78,7 @@ object NativeSolverImplTest : Spek({
     }
 
     on("answering with parameters: terms[\"t1\"], k=2") {
-      val answer = solver.answer(arrayOf("t1"), 2)
+      val answer = solver.answer(postingLists, arrayOf("t1"), 2)
       val first = answer.next();
       it("first result should be some") {
         assertThat("first result is some", first.isPresent, equalTo(true))

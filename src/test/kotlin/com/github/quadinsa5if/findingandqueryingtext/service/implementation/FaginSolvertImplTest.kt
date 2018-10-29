@@ -49,9 +49,9 @@ object FaginSolvertImplTest : Spek({
 
 
   given("a fagin solver") {
-    val solver: QuerySolver = FaginSolverImp(postingLists)
+    val solver: QuerySolver = FaginSolverImp()
     on("answering with parameters: terms=[\"t1\", \"t2\"], k=3") {
-      val answer = solver.answer(arrayOf("t1", "t2"), 3)
+      val answer = solver.answer(postingLists, arrayOf("t1", "t2"), 3)
       val first = answer.next();
       it("first result should be some") {
         assertThat("first result is some", first.isPresent, equalTo(true))
@@ -80,7 +80,7 @@ object FaginSolvertImplTest : Spek({
     }
 
     on("answering with parameters: terms[\"t1\"], k=2") {
-      val answer = solver.answer(arrayOf("t1"), 2)
+      val answer = solver.answer(postingLists, arrayOf("t1"), 2)
       val first = answer.next();
       it("first result should be some") {
         assertThat("first result is some", first.isPresent, equalTo(true))
