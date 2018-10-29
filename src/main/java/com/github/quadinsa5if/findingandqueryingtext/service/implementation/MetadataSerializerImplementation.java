@@ -2,16 +2,20 @@ package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 
 import com.github.quadinsa5if.findingandqueryingtext.exception.InvalidInvertedFileException;
 import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
-import com.github.quadinsa5if.findingandqueryingtext.model.*;
+import com.github.quadinsa5if.findingandqueryingtext.model.ArticleHeader;
 import com.github.quadinsa5if.findingandqueryingtext.service.MetadataSerializer;
-import com.github.quadinsa5if.findingandqueryingtext.service.Serializer;
-import com.github.quadinsa5if.findingandqueryingtext.util.Result;
+import com.github.quadinsa5if.findingandqueryingtext.service.SerializerProperties;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.LineNumberReader;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
-public class MetadataSerializerImplementation extends Serializer implements MetadataSerializer {
+public class MetadataSerializerImplementation extends SerializerProperties implements MetadataSerializer {
 
     public MetadataSerializerImplementation() {
     }
@@ -21,22 +25,11 @@ public class MetadataSerializerImplementation extends Serializer implements Meta
     }
 
     @Override
-    public Result<File, Exception> serialize(List<ArticleHeader> metadata) {
-        int fileNumber = 0;
-        final File directory = new File(fileFolder);
-        if (!directory.exists()) {
-            directory.mkdirs();
-        }
-        File mfFile = new File(fileFolder + METADATA_FILE + fileNumber);
-        while (mfFile.exists()) {
-            fileNumber += 1;
-            mfFile = new File(fileFolder + METADATA_FILE + fileNumber);
-        }
-        final File mfValidFile = mfFile;
-        return Result.Try(() -> {
+    public IO<File> serialize(List<ArticleHeader> metadata, File output) {
+        return () -> {
             StringBuilder strBuilder = new StringBuilder();
-            if (mfValidFile.createNewFile()) {
-                BufferedWriter mfbw = Files.newBufferedWriter(mfValidFile.toPath());
+            if (output.createNewFile()) {
+                BufferedWriter mfbw = Files.newBufferedWriter(output.toPath());
                 for (ArticleHeader meta : metadata) {
                     strBuilder.setLength(0);
                     strBuilder.append(meta.id)
@@ -50,8 +43,8 @@ public class MetadataSerializerImplementation extends Serializer implements Meta
             } else {
                 throw new InvalidInvertedFileException("Files already exists");
             }
-            return mfValidFile;
-        });
+            return output;
+        };
     }
 
     @Override

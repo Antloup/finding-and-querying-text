@@ -9,7 +9,7 @@ public class MetadataImplementation implements DatasetVisitor {
 
     String currentPath;
 
-    MetadataImplementation() {
+    public MetadataImplementation() {
         currentPath = "";
     }
 

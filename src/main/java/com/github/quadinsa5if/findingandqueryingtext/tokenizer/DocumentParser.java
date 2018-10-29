@@ -40,8 +40,6 @@ public class DocumentParser {
 
     public void parse(File[] files) {
 
-        List<XMLEventReader> readers = new ArrayList<>();
-
         int totalPassNumber = 0;
 
         for (DatasetVisitor visitor : visitors) {
@@ -58,7 +56,7 @@ public class DocumentParser {
                     }
                 }
 
-                XMLEventReader reader = null;
+                XMLEventReader reader;
                 try {
                     reader = XMLInputFactory.newFactory().createXMLEventReader(new FileInputStream(file));
                 } catch (XMLStreamException | FileNotFoundException e) {
