@@ -1,6 +1,7 @@
 package com.github.quadinsa5if.findingandqueryingtext.service;
 
 import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
+import com.github.quadinsa5if.findingandqueryingtext.model.Article;
 import com.github.quadinsa5if.findingandqueryingtext.model.ArticleHeader;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 
@@ -17,7 +18,7 @@ public interface MetadataSerializer {
      * @param metadata
      * @return Metadata file
      */
-    Result<File, Exception> serialize(List<Metadata> metadata);
+    IO<File> serialize(List<ArticleHeader> metadata, File output);
 
     /**
      * Unserialize the metadata from a metadata file
@@ -25,7 +26,7 @@ public interface MetadataSerializer {
      * @param file
      * @return
      */
-    IO<List<Metadata>> unserialize(FileReader file);
+    IO<List<ArticleHeader>> unserialize(FileReader file);
 
     /**
      * Get metadata for a specific article
@@ -34,7 +35,7 @@ public interface MetadataSerializer {
      * @param articleId
      * @return
      */
-    IO<Optional<Metadata>> unserialize(FileReader file, int articleId);
+    IO<Optional<ArticleHeader>> unserialize(FileReader file, int articleId);
 
 
 }
