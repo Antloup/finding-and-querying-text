@@ -28,7 +28,7 @@ public class BenchmarkAction {
                 batchSizes,
                 1,
                 batchSize -> {
-                    standardAction.buildInvertedFile(benchDataSetFolder, benchInvertedFile, batchSize);
+                    standardAction.buildInvertedFile(benchDataSetFolder, benchInvertedFile, batchSize).attempt();
                     return Unit.INSTANCE;
                 }
         );
