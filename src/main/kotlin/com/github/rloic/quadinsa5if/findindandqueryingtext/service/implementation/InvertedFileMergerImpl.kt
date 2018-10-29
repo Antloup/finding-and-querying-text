@@ -10,16 +10,17 @@ import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSeriali
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.InvertedFileSerializerImplementation
 import com.github.quadinsa5if.findingandqueryingtext.util.Result
 import java.io.*
+import java.nio.file.Files
 
 class InvertedFileMergerImpl(
         private val serializer: InvertedFileSerializer = InvertedFileSerializerImplementation()
 ) : InvertedFileMerger {
 
-    override fun merge(parts: MutableIterable<HeaderAndInvertedFile>, outputFiles: HeaderAndInvertedFile): Result<HeaderAndInvertedFile, IOException> {
+    override fun merge(parts: MutableIterable<HeaderAndInvertedFile>, outputFiles: HeaderAndInvertedFile): IO<HeaderAndInvertedFile> {
         val process: IO<HeaderAndInvertedFile> = IO {
 
-            val headerWriter = BufferedWriter(FileWriter(outputFiles.headerFile))
-            val postingListWriter = BufferedWriter(FileWriter(outputFiles.invertedFile))
+            val headerWriter = Files.newBufferedWriter(outputFiles.headerFile.toPath())
+            val postingListWriter = Files.newBufferedWriter(outputFiles.invertedFile.toPath())
 
             val headers = mutableListOf<MutableList<Pair<String, ReversedIndexIdentifier>>>()
             val invertedFiles = mutableListOf<RandomAccessFile>()
@@ -42,22 +43,23 @@ class InvertedFileMergerImpl(
                 val currentHeaders = getHeaders(currentIndices, headers)
                 val invertedParts = getInvertedParts(currentIndices, invertedFiles)
 
-                val entryList = getEntries(currentHeaders.map { it.second }, invertedParts)
+                val entryList = getEntries(currentHeaders.map { it.second }, invertedParts).sync()
                 val term = currentHeaders[0].first!!
                 val length = currentHeaders.sumBy { it.second.length }
                 val termAndReversedIndexIndexIdentifier = Pair(term, ReversedIndexIdentifier(offset, length))
 
-                entryList.map {
-                    serializer.writeEntries(it, postingListWriter)
-                }.then {
-                    serializer.writeReversedIndexIdentifier(listOf(termAndReversedIndexIndexIdentifier), headerWriter)
-                }.sync()
+                serializer.writeReversedIndexIdentifier(listOf(termAndReversedIndexIndexIdentifier), headerWriter).sync()
+                serializer.writeEntries(entryList, postingListWriter).sync()
+
                 offset += length
                 increments(currentIndices, headers, invertedFiles)
             }
+
+            headerWriter.close()
+            postingListWriter.close()
             outputFiles
         }
-        return process.attempt()
+        return process
     }
 
     fun getIndicesOfMinimalTerm(
