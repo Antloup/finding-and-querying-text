@@ -3,6 +3,8 @@ package com.github.quadinsa5if.findingandqueryingtext.service.implementation
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer
+import com.github.quadinsa5if.findingandqueryingtext.util.NaiveCompressor
+import com.github.quadinsa5if.findingandqueryingtext.util.VByteCompressor
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import org.jetbrains.spek.api.Spek
@@ -21,7 +23,7 @@ object InvertedFileSerializerImplementationTest: Spek({
   val TEST_FOLDER_NAME = "test_folder_inverted_file_serializer"
   val testDirectory = File(TEST_FOLDER_NAME)
   testDirectory.run { deleteRecursively(); delete() }
-  val serializer: InvertedFileSerializer = InvertedFileSerializerImplementation(TEST_FOLDER_NAME)
+  val serializer: InvertedFileSerializer = InvertedFileSerializerImplementation(TEST_FOLDER_NAME, VByteCompressor())
 
   val d1 = 1
   val d2 = 2

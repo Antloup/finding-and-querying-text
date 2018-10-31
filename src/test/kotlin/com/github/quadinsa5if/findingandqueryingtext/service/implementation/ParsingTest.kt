@@ -2,6 +2,7 @@ package com.github.quadinsa5if.findingandqueryingtext.service.implementation
 
 import com.github.quadinsa5if.findingandqueryingtext.model.ArticleHeader
 import com.github.quadinsa5if.findingandqueryingtext.tokenizer.DocumentParser
+import com.github.quadinsa5if.findingandqueryingtext.util.NaiveCompressor
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import org.jetbrains.spek.api.Spek
@@ -18,7 +19,7 @@ object ParsingTest : Spek({
 
         on("computing scores") {
 
-            val serializer = InvertedFileSerializerImplementation()
+            val serializer = InvertedFileSerializerImplementation(NaiveCompressor())
             val metadataSerializer = MetadataSerializerImplementation()
             val scorerVisitor = ScorerImplementation(serializer, 10)
             val metadataVisitor = MetadataImplementation(metadataSerializer)

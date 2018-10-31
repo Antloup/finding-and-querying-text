@@ -8,13 +8,14 @@ import com.github.quadinsa5if.findingandqueryingtext.model.ReversedIndexIdentifi
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileMerger
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.InvertedFileSerializerImplementation
+import com.github.quadinsa5if.findingandqueryingtext.util.NaiveCompressor
 import java.io.BufferedWriter
 import java.io.FileReader
 import java.io.FileWriter
 import java.io.RandomAccessFile
 
 class InvertedFileMergerImpl(
-        private val serializer: InvertedFileSerializer = InvertedFileSerializerImplementation()
+        private val serializer: InvertedFileSerializer = InvertedFileSerializerImplementation(NaiveCompressor())
 ) : InvertedFileMerger {
 
     override fun merge(parts: MutableIterable<HeaderAndInvertedFile>, outputFiles: HeaderAndInvertedFile): HeaderAndInvertedFile {

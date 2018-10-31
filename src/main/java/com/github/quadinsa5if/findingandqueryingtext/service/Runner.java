@@ -7,6 +7,7 @@ import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.Vocabulary
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InDiskVocabularyImpl;
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.*;
 import com.github.quadinsa5if.findingandqueryingtext.tokenizer.DocumentParser;
+import com.github.quadinsa5if.findingandqueryingtext.util.NaiveCompressor;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
@@ -96,7 +97,7 @@ public class Runner implements Runnable{
 
 
     private static HeaderAndInvertedFile buildInvertedFile(Stream<Path> articlesFolder, File outputFile) {
-        final InvertedFileSerializer serializer = new InvertedFileSerializerImplementation();
+        final InvertedFileSerializer serializer = new InvertedFileSerializerImplementation(new NaiveCompressor());
         final MetadataSerializerImplementation metadataSerializer = new MetadataSerializerImplementation();
 
         ScorerImplementation scorerVisitor = new ScorerImplementation(serializer, 10);

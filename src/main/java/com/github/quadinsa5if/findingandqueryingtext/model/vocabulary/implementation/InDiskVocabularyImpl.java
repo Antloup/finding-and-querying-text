@@ -6,6 +6,7 @@ import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.Vocabulary
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.InvertedFileSerializerImplementation;
 import com.github.quadinsa5if.findingandqueryingtext.util.Cache;
+import com.github.quadinsa5if.findingandqueryingtext.util.NaiveCompressor;
 
 import java.io.FileReader;
 import java.io.LineNumberReader;
@@ -36,7 +37,7 @@ public class InDiskVocabularyImpl implements Vocabulary {
     private final InvertedFileSerializer serializer;
 
     public InDiskVocabularyImpl(final FileReader headerFile, final RandomAccessFile postingListFile, int cacheSize) {
-        serializer = new InvertedFileSerializerImplementation();
+        serializer = new InvertedFileSerializerImplementation(new NaiveCompressor());
         reversedIndexIdentifiers = serializer.unserializeHeader(headerFile)
                 .attempt()
                 .unwrap();

@@ -2,28 +2,38 @@ package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 
 import com.github.quadinsa5if.findingandqueryingtext.exception.InvalidInvertedFileException;
 import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
+import com.github.quadinsa5if.findingandqueryingtext.lang.Iter;
 import com.github.quadinsa5if.findingandqueryingtext.lang.Pair;
 import com.github.quadinsa5if.findingandqueryingtext.lang.Unit;
 import com.github.quadinsa5if.findingandqueryingtext.model.*;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
 import com.github.quadinsa5if.findingandqueryingtext.service.Serializer;
+import com.github.quadinsa5if.findingandqueryingtext.util.EncoderDecoder;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 
 import java.io.*;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.util.*;
 
 public class InvertedFileSerializerImplementation extends Serializer implements InvertedFileSerializer {
 
-    public InvertedFileSerializerImplementation() {
+    public final EncoderDecoder<Integer> compressor;
+
+    private final static byte zero = (byte)'0';
+
+    public InvertedFileSerializerImplementation(EncoderDecoder<Integer> compressor) {
+        this.compressor = compressor;
     }
 
     /**
      * @param fileFolder : path of the folder (without '/' at the end)
      */
-    public InvertedFileSerializerImplementation(String fileFolder) {
+    public InvertedFileSerializerImplementation(String fileFolder, EncoderDecoder<Integer> compressor) {
         super(fileFolder);
+        this.compressor = compressor;
     }
 
     @Override
@@ -68,14 +78,20 @@ public class InvertedFileSerializerImplementation extends Serializer implements 
     @Override
     public IO<Integer> writeEntries(List<Entry> entries, BufferedWriter writer) {
         final StringBuilder stringBuilder = new StringBuilder();
+
         return () -> {
             int totalLength = 0;
             for (Entry entry : entries) {
+                Iter<Byte> bytes = compressor.encode(getDecimal(entry.score));
+
                 stringBuilder.setLength(0);
                 stringBuilder.append(entry.articleId)
                         .append(PARTS_DELIMITER)
-                        .append(entry.score)
-                        .append(IDENTIFIERS_DELIMITER);
+                        .append((int) entry.score + ".");
+                for (Byte data : bytes) {
+                    stringBuilder.append(data);
+                }
+                stringBuilder.append(IDENTIFIERS_DELIMITER);
                 String res = stringBuilder.toString();
                 totalLength += res.length();
                 writer.write(res);
@@ -150,13 +166,53 @@ public class InvertedFileSerializerImplementation extends Serializer implements 
                 if ("".equals(term)) {
                     break;
                 }
-                String[] score = term.split(":");
+                String[] score = term.split(String.valueOf(PARTS_DELIMITER));
                 if (score.length != 2) {
                     throw new InvalidInvertedFileException("Invalid inverted file between offset " + postingListOffset + " and " + (postingListOffset + postingListLength));
                 }
-                entries.add(new Entry(Integer.valueOf(score[0]), Float.valueOf(score[1])));
+
+                Integer decode = compressor.decode(getEncode(score[1].substring(score[1].indexOf('.') + 1)));
+                String decodedString = score[1].substring(0,score[1].indexOf('.')+1) + String.valueOf(decode);
+                entries.add(new Entry(Integer.valueOf(score[0]), Float.valueOf(decodedString)));
             }
             return entries;
+        };
+    }
+
+
+    /**
+     *
+     * @param f
+     * @return Decimal part of float
+     */
+    protected Integer getDecimal(Float f) {
+        String txt = Float.toString(f);
+        return Integer.valueOf(txt.substring(txt.indexOf('.') + 1));
+    }
+
+    /**
+     *
+     * @param s
+     * @return Encoded part of the string
+     */
+    protected Iter<Byte> getEncode(String s){
+        byte[] encodedByte = s.getBytes();
+
+        for(int i=0;i < encodedByte.length;i++){
+            encodedByte[i] -= zero;
+        }
+
+        return new Iter<Byte>() {
+            int i = 0;
+
+            @Override
+            public Optional<Byte> next() {
+                if (i == encodedByte.length) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(encodedByte[i++]);
+                }
+            }
         };
     }
 }
