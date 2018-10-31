@@ -8,7 +8,6 @@ import com.github.quadinsa5if.findingandqueryingtext.lang.Unit;
 import com.github.quadinsa5if.findingandqueryingtext.model.*;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
-import com.github.quadinsa5if.findingandqueryingtext.service.Serializer;
 import com.github.quadinsa5if.findingandqueryingtext.util.EncoderDecoder;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 import com.github.quadinsa5if.findingandqueryingtext.service.SerializerProperties;

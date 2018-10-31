@@ -15,6 +15,7 @@ import com.github.quadinsa5if.findingandqueryingtext.service.implementation.Meta
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.MetadataSerializerImplementation;
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.ScorerImplementation;
 import com.github.quadinsa5if.findingandqueryingtext.tokenizer.DocumentParser;
+import com.github.quadinsa5if.findingandqueryingtext.util.NaiveCompressor;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 import com.github.rloic.quadinsa5if.findindandqueryingtext.service.implementation.FaginSolverImp;
 import com.github.rloic.quadinsa5if.findindandqueryingtext.service.implementation.InvertedFileMergerImpl;
@@ -32,7 +33,7 @@ import static com.github.quadinsa5if.findingandqueryingtext.util.Arguments.*;
 
 public class StandardAction {
 
-    private final InvertedFileSerializer serializer = new InvertedFileSerializerImplementation();
+    private final InvertedFileSerializer serializer = new InvertedFileSerializerImplementation(new NaiveCompressor());
     private final MetadataSerializer metadataSerializer = new MetadataSerializerImplementation();
 
     public void run(@NotNull CommandLine cl) {

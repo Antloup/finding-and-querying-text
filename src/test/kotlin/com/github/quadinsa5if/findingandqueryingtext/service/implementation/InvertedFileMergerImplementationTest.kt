@@ -2,6 +2,7 @@ package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 
 import com.github.quadinsa5if.findingandqueryingtext.lang.Pair
 import com.github.quadinsa5if.findingandqueryingtext.model.ReversedIndexIdentifier
+import com.github.quadinsa5if.findingandqueryingtext.util.NaiveCompressor
 import com.github.rloic.quadinsa5if.findindandqueryingtext.service.implementation.InvertedFileMergerImpl
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
@@ -33,7 +34,7 @@ object InvertedFileMergerImplementationTest : Spek({
       RandomAccessFile(file, "r"),
       RandomAccessFile(file, "r")
   )
-  val merger = InvertedFileMergerImpl(InvertedFileSerializerImplementation())
+  val merger = InvertedFileMergerImpl(InvertedFileSerializerImplementation(NaiveCompressor()))
   given("two posting headers") {
 
     on("get indices of minimal terms") {

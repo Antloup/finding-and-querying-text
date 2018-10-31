@@ -4,6 +4,7 @@ import com.github.quadinsa5if.findingandqueryingtext.model.Entry
 import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer
+import com.github.quadinsa5if.findingandqueryingtext.util.NaiveCompressor
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import org.jetbrains.spek.api.Spek
@@ -28,7 +29,7 @@ object InvertedFileSerializerImplementationTest: Spek({
     testDirectory.listFiles().forEach { it.delete() }
   }
 
-  val serializer: InvertedFileSerializer = InvertedFileSerializerImplementation(TEST_FOLDER_NAME)
+  val serializer: InvertedFileSerializer = InvertedFileSerializerImplementation(TEST_FOLDER_NAME, NaiveCompressor())
 
   val d1 = 1
   val d2 = 2
