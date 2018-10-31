@@ -1,11 +1,12 @@
 package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 
+import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
 import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
 import com.github.quadinsa5if.findingandqueryingtext.service.DatasetVisitor;
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
-import com.github.quadinsa5if.findingandqueryingtext.util.Result;
+import com.github.quadinsa5if.findingandqueryingtext.service.SerializerProperties;
 
 import java.io.File;
 import java.util.*;
@@ -22,8 +23,8 @@ public class ScorerImplementation implements DatasetVisitor {
 
     private Map<String, Float> numberOfArticlesContainingTerm;
     private Map<String, Float> termsFrequencyInCurrentArticle;
-    private Map<String, Float> idf;
     private int numberOfArticles;
+    private int outputsNumber = 0;
 
     public ScorerImplementation(InvertedFileSerializer serializer, int batchSize) {
 
@@ -35,8 +36,15 @@ public class ScorerImplementation implements DatasetVisitor {
         this.numberOfArticles = 0;
         this.numberOfArticlesContainingTerm = new HashMap<>();
         this.termsFrequencyInCurrentArticle = new HashMap<>();
-        this.idf = new HashMap<>();
         this.currentIndexInBatch = 0;
+
+        final File tmpDir = new File("tmp");
+        if (!tmpDir.exists()) {
+            tmpDir.mkdirs();
+        } else {
+            Arrays.stream(tmpDir.listFiles()).forEach(File::delete);
+        }
+
     }
 
     public int getTotalPassNumber() {
@@ -44,7 +52,7 @@ public class ScorerImplementation implements DatasetVisitor {
     }
 
     @Override
-    public void onArticleParseStart(int articleId, int currentPassNumber) {
+    public void onOpeningArticle(int articleId, int currentPassNumber) {
 
         if (currentPassNumber == 1) {
             numberOfArticles++;
@@ -76,7 +84,7 @@ public class ScorerImplementation implements DatasetVisitor {
     }
 
     @Override
-    public void onArticleParseEnd(int articleId, int currentPassNumber) {
+    public void onClosingArticle(int articleId, int currentPassNumber) {
         if (currentPassNumber == 2) {
 
             for (String term : termsFrequencyInCurrentArticle.keySet()) {
@@ -96,12 +104,11 @@ public class ScorerImplementation implements DatasetVisitor {
     }
 
     @Override
-    public void onPassEnd(int currentPassNumber) {
+    public void onEndingPass(int currentPassNumber) {
     }
 
     @Override
-    public void onPassStart(File file, int currentPassNumber) {
-
+    public void onOpeningFile(File file, int currentPassNumber) {
     }
 
     /**
@@ -113,7 +120,6 @@ public class ScorerImplementation implements DatasetVisitor {
      */
     protected void setScore(String term, int articleId, float score) {
         batchVocabulary.putEntry(term, new Entry(articleId, score));
-
         allScores.put((articleId + "_" + term), score);
     }
 
@@ -132,9 +138,14 @@ public class ScorerImplementation implements DatasetVisitor {
      * Serialize the temporary stored batchVocabulary
      */
     private void serializeBatchVocabulary() {
-        Result<HeaderAndInvertedFile, Exception> result = serializer.serialize(batchVocabulary);
-        partitions.add(result.ok().get());
+        final HeaderAndInvertedFile outputFile = new HeaderAndInvertedFile(
+                new File("tmp/" + SerializerProperties.HEADER_FILE + outputsNumber),
+                new File("tmp/" + SerializerProperties.INVERTED_FILE + outputsNumber)
+        );
+        IO<HeaderAndInvertedFile> result = serializer.serialize(batchVocabulary, outputFile);
+        partitions.add(result.attempt().expect("Something did wrong during serialization"));
         resetBatchVocabulary();
+        outputsNumber += 1;
     }
 
     /**

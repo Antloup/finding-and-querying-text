@@ -14,7 +14,7 @@ public interface DatasetVisitor {
     /**
      * Called when an article parsing will begin
      */
-    void onArticleParseStart(int articleId, int currentPassNumber);
+    void onOpeningArticle(int articleId, int currentPassNumber);
 
     /**
      * Called when the parser read a term in an article
@@ -28,15 +28,15 @@ public interface DatasetVisitor {
      *
      * @param articleId The article that has been parsed
      */
-    void onArticleParseEnd(int articleId, int currentPassNumber);
+    void onClosingArticle(int articleId, int currentPassNumber);
 
     /**
      * Called when a parsing pass has just finished
      */
-    void onPassEnd(int currentPassNumber);
+    void onEndingPass(int currentPassNumber);
 
     /**
-     * Called when a parsing pass will start
+     * Called when a new pass will start on the document
      */
-    void onPassStart(File file, int currentPassNumber);
+    void onOpeningFile(File file, int currentPassNumber);
 }

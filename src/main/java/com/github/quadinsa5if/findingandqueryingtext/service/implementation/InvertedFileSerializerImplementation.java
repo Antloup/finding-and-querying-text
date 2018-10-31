@@ -11,14 +11,13 @@ import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSeriali
 import com.github.quadinsa5if.findingandqueryingtext.service.Serializer;
 import com.github.quadinsa5if.findingandqueryingtext.util.EncoderDecoder;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
+import com.github.quadinsa5if.findingandqueryingtext.service.SerializerProperties;
 
 import java.io.*;
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.util.*;
 
-public class InvertedFileSerializerImplementation extends Serializer implements InvertedFileSerializer {
+public class InvertedFileSerializerImplementation extends SerializerProperties implements InvertedFileSerializer {
 
     public final EncoderDecoder<Integer> compressor;
 
@@ -37,22 +36,15 @@ public class InvertedFileSerializerImplementation extends Serializer implements 
     }
 
     @Override
-    public Result<HeaderAndInvertedFile, Exception> serialize(InMemoryVocabularyImpl vocabulary) {
-        int fileNumber = 0;
-        final File directory = new File(fileFolder);
-        if (!directory.exists()) {
-            directory.mkdirs();
-        }
-        File ifFile = new File(fileFolder + INVERTED_FILE + fileNumber);
-        File hfFile = new File(fileFolder + HEADER_FILE + fileNumber);
-        while (ifFile.exists() || hfFile.exists()) {
-            fileNumber += 1;
-            ifFile = new File(fileFolder + INVERTED_FILE + fileNumber);
-            hfFile = new File(fileFolder + HEADER_FILE + fileNumber);
-        }
-        final File ifValidFile = ifFile;
-        final File hfValidFile = hfFile;
-        return Result.Try(() -> {
+    public IO<HeaderAndInvertedFile> serialize(
+            InMemoryVocabularyImpl vocabulary,
+            HeaderAndInvertedFile outputFile
+    ) {
+
+        final File ifValidFile = outputFile.invertedFile;
+        final File hfValidFile = outputFile.headerFile;
+
+        return () -> {
             if (hfValidFile.createNewFile() && ifValidFile.createNewFile()) {
                 BufferedWriter hfbw = Files.newBufferedWriter(hfValidFile.toPath());
                 BufferedWriter ifbw = Files.newBufferedWriter(ifValidFile.toPath());
@@ -66,19 +58,18 @@ public class InvertedFileSerializerImplementation extends Serializer implements 
                     offset += length;
                 }
                 writeReversedIndexIdentifier(reversedIndexIdentifiers, hfbw).sync();
-                hfbw.close();
                 ifbw.close();
+                hfbw.close();
             } else {
-                throw new InvalidInvertedFileException("Files already exists");
+                throw new InvalidInvertedFileException("Files " + hfValidFile + " and " + ifValidFile + " already exists.");
             }
-            return new HeaderAndInvertedFile(hfValidFile, ifValidFile);
-        });
+            return outputFile;
+        };
     }
 
     @Override
     public IO<Integer> writeEntries(List<Entry> entries, BufferedWriter writer) {
         final StringBuilder stringBuilder = new StringBuilder();
-
         return () -> {
             int totalLength = 0;
             for (Entry entry : entries) {
@@ -114,7 +105,7 @@ public class InvertedFileSerializerImplementation extends Serializer implements 
                         .append(NEW_LINE);
                 writer.write(stringBuilder.toString());
             }
-            return new Unit();
+            return Unit.create();
         };
     }
 
@@ -128,7 +119,7 @@ public class InvertedFileSerializerImplementation extends Serializer implements 
                     for (Entry entry : it) {
                         vocabulary.putEntry(termHeader.getKey(), entry);
                     }
-                    return new Unit();
+                    return Unit.create();
                 }).sync();
             }
             return vocabulary;

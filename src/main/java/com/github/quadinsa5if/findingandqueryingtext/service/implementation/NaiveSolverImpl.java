@@ -13,16 +13,12 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.averagingDouble;
 
-public class NativeSolverImpl implements QuerySolver {
+public class NaiveSolverImpl implements QuerySolver {
 
-  private final Vocabulary vocabulary;
-
-  public NativeSolverImpl(Vocabulary vocabulary) {
-    this.vocabulary = vocabulary;
-  }
+  public NaiveSolverImpl() {}
 
   @Override
-  public Iter<Integer> answer(String[] terms, int k) {
+  public Iter<Integer> answer(Vocabulary vocabulary, String[] terms, int k) {
 
     final List<Entry> postingListForTerms = new ArrayList<>();
     for (String term : terms) {

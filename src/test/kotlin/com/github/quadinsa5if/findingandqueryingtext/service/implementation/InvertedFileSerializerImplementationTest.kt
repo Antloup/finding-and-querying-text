@@ -1,10 +1,9 @@
 package com.github.quadinsa5if.findingandqueryingtext.service.implementation
 
 import com.github.quadinsa5if.findingandqueryingtext.model.Entry
+import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer
-import com.github.quadinsa5if.findingandqueryingtext.util.NaiveCompressor
-import com.github.quadinsa5if.findingandqueryingtext.util.VByteCompressor
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import org.jetbrains.spek.api.Spek
@@ -22,8 +21,14 @@ object InvertedFileSerializerImplementationTest: Spek({
 
   val TEST_FOLDER_NAME = "test_folder_inverted_file_serializer"
   val testDirectory = File(TEST_FOLDER_NAME)
-  testDirectory.run { deleteRecursively(); delete() }
-  val serializer: InvertedFileSerializer = InvertedFileSerializerImplementation(TEST_FOLDER_NAME, VByteCompressor())
+
+  if (!testDirectory.exists()) {
+    testDirectory.mkdirs()
+  } else {
+    testDirectory.listFiles().forEach { it.delete() }
+  }
+
+  val serializer: InvertedFileSerializer = InvertedFileSerializerImplementation(TEST_FOLDER_NAME)
 
   val d1 = 1
   val d2 = 2
@@ -54,17 +59,26 @@ object InvertedFileSerializerImplementationTest: Spek({
   postingListT1.forEach { postingLists.putEntry("t1", it) }
   postingListT2.forEach { postingLists.putEntry("t2", it) }
 
+  var _i = 0
+  fun autoInc(): Int {
+    return _i++
+  }
+
+  fun genFile() = File(TEST_FOLDER_NAME + "/gen_file_" + autoInc())
+
+  fun getHeaderAndInvertedFile() = HeaderAndInvertedFile(genFile(), genFile())
+
   given("an inverted file serializer implementation") {
     on("serialize") {
-      val result = serializer.serialize(postingLists)
+      val result = serializer.serialize(postingLists, getHeaderAndInvertedFile())
       it("result should be ok") {
-        assertThat(result.isOk, equalTo(true))
+        assertThat(result.attempt().isOk, equalTo(true))
       }
     }
   }
 
   given("the serialized files") {
-    val result = serializer.serialize(postingLists).unwrap()
+    val result = serializer.serialize(postingLists, getHeaderAndInvertedFile()).attempt().unwrap()
     val headerFile = result.headerFile!!
     val invertedFile = result.invertedFile!!
 

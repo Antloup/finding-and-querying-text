@@ -18,8 +18,13 @@ import java.io.RandomAccessFile
 @RunWith(JUnitPlatform::class)
 object MetadataSerializerImplementationTest : Spek({
     val TEST_FOLDER_NAME = "fileTest/novb"
+
     val testDirectory = File(TEST_FOLDER_NAME)
-    testDirectory.run { deleteRecursively(); delete() }
+    if (!testDirectory.exists()) {
+        testDirectory.mkdirs()
+    } else {
+        testDirectory.listFiles().forEach { it.delete() }
+    }
     val serializer = MetadataSerializerImplementation(TEST_FOLDER_NAME)
 
     val metadata1 = ArticleHeader(1, "path1")
@@ -33,11 +38,18 @@ object MetadataSerializerImplementationTest : Spek({
             metadata2,
             metadata3,
             metadata4,
-            metadata5)
+            metadata5
+    )
+
+    var _i = 0
+
+    fun inc() = _i++
+
+    fun genFile() = File(TEST_FOLDER_NAME + "/test_" + inc())
 
     given("a metadata file serializer implementation") {
         on("serialize") {
-            val result = serializer.serialize(metadataList)
+            val result = serializer.serialize(metadataList, genFile()).attempt()
             it("result should be ok") {
                 assertThat(result.isOk, equalTo(true))
             }
@@ -45,7 +57,7 @@ object MetadataSerializerImplementationTest : Spek({
     }
 
     given("the serialized files") {
-        val result = serializer.serialize(metadataList).unwrap()
+        val result = serializer.serialize(metadataList, genFile()).attempt().unwrap()
         val metadataFile = result!!
 
         on("unserialize metadata") {

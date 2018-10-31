@@ -1,0 +1,6 @@
+Function: build inverted index for 1 iterations
+With parameter batch size = 100, 	mean runtime = 223335,0000 ms, mean heap usage = 3,7 GB
+With parameter batch size = 1000, 	mean runtime = 185121,0000 ms, mean heap usage = 3,9 GB
+With parameter batch size = 10000, 	mean runtime = 166129,0000 ms, mean heap usage = 4,2 GB
+With parameter batch size = 100000, 	mean runtime = 179524,0000 ms, mean heap usage = 4,4 GB
+---------------------------------------
