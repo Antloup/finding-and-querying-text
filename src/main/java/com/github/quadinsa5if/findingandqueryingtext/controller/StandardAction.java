@@ -46,7 +46,7 @@ public class StandardAction {
         final HeaderAndInvertedFile outputFile = HeaderAndInvertedFile.autoSuffix(cl.getOptionValue(OUTPUT_FILE.full));
 
         if (mustBuildInvertedFile) {
-            invertedFile = buildInvertedFile(dataSetFolder, outputFile, 10)
+            invertedFile = buildInvertedFile(dataSetFolder, outputFile, 1000)
                     .attempt()
                     .expect("Something did wrong when building the inverted files");
             System.out.println("Building inverted file done...");
@@ -71,6 +71,7 @@ public class StandardAction {
         for (int i : answer) {
             System.out.println("Article " + i);
         }
+        System.out.println("End");
 
     }
 

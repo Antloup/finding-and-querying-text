@@ -10,6 +10,10 @@ import java.util.Optional;
 
 public class NaiveCompressor implements EncoderDecoder<Integer> {
 
+    private static byte PARTS_DELIMITER = (byte) ':';
+    private static byte POSTING_LIST_DELIMITER = (byte) ';';
+    private static byte ZERO = (byte) '0';
+
     @Override
     public Integer decode(Iter<Byte> msg) {
         int sum = 0;
@@ -28,7 +32,7 @@ public class NaiveCompressor implements EncoderDecoder<Integer> {
     public Iter<Byte> encode(Integer input) {
         List<Byte> bytes = new ArrayList<>();
 
-        LinkedList<Integer> stack = new LinkedList<Integer>();
+        LinkedList<Integer> stack = new LinkedList<>();
         while (input > 0) {
             stack.push( input % 10 );
             input = input / 10;

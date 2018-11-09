@@ -19,6 +19,7 @@ import java.util.*;
 public class InvertedFileSerializerImplementation extends SerializerProperties implements InvertedFileSerializer {
 
     public final EncoderDecoder<Integer> compressor;
+    private static final int FLOAT_PRECISION = 1000;
 
     private final static byte zero = (byte)'0';
 
@@ -169,15 +170,32 @@ public class InvertedFileSerializerImplementation extends SerializerProperties i
         };
     }
 
+    Iter<Byte> iterableOf(byte[] byteArray) {
+        int i = 0;
+        return new Iter<Byte>() {
+            int i = 0;
+
+            @Override
+            public Optional<Byte> next() {
+                if (i == byteArray.length) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(byteArray[i++]);
+                }
+            }
+        };
+    }
+
 
     /**
      *
      * @param f
      * @return Decimal part of float
      */
-    protected Integer getDecimal(Float f) {
-        String txt = Float.toString(f);
-        return Integer.valueOf(txt.substring(txt.indexOf('.') + 1));
+    protected int getDecimal(float f) {
+        int lowerBound = (int) f;
+        float decimalPart = f - lowerBound;
+        return (int) decimalPart * FLOAT_PRECISION;
     }
 
     /**
