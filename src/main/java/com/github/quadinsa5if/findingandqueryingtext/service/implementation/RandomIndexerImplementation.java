@@ -10,17 +10,17 @@ public class RandomIndexerImplementation implements DatasetVisitor {
 
     private static final int VECTOR_SIZE = 100;
     // Important: Must be even
-    private static final int NON_ZERO_ELEMENTS = 20;
+    private static final int NON_ZERO_ELEMENTS = 4;
 
 
-    private Map<Integer, int[]> documentVectors;
-    private Map<String, int[]> termVectors;
+    private Map<Integer, int[]> indexVectors;
+    private Map<String, int[]> contextVectors;
     private List<Integer> nonZeroIndexes;
     private int currentArticleId;
 
     public RandomIndexerImplementation() {
-        documentVectors = new HashMap<>();
-        termVectors = new HashMap<>();
+        indexVectors = new HashMap<>();
+        contextVectors = new HashMap<>();
 
         nonZeroIndexes = new ArrayList<>(VECTOR_SIZE);
         for (int i = 0; i < VECTOR_SIZE; i++) {
@@ -42,7 +42,7 @@ public class RandomIndexerImplementation implements DatasetVisitor {
         return new int[VECTOR_SIZE];
     }
 
-    private void addInPlace(int[] target, int[] other) {
+    private void addTo(int[] target, int[] other) {
         assert target.length == other.length;
         for (int i = 0; i < target.length; i++) {
             target[i] += other[i];
@@ -57,19 +57,19 @@ public class RandomIndexerImplementation implements DatasetVisitor {
     @Override
     public void onOpeningArticle(int articleId, int currentPassNumber) {
         currentArticleId = articleId;
-        if (!documentVectors.containsKey(articleId)) {
-            documentVectors.put(articleId, createRandomVector());
+        if (!indexVectors.containsKey(articleId)) {
+            indexVectors.put(articleId, createRandomVector());
         }
     }
 
     @Override
     public void onTermRead(String term, int currentPassNumber) {
-        int[] termVector = termVectors.putIfAbsent(term, createRandomVector());
-        addInPlace(termVector, documentVectors.get(currentArticleId));
+        contextVectors.putIfAbsent(term, createZeroVector());
+        addTo(contextVectors.get(term), indexVectors.get(currentArticleId));
     }
 
-    public Map<String, int[]> getTermVectors() {
-        return termVectors;
+    public Map<String, int[]> getContextVectors() {
+        return contextVectors;
     }
 
     @Override
