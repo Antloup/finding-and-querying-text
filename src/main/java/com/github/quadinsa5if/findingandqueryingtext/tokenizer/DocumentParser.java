@@ -45,6 +45,10 @@ public class DocumentParser {
         for (int currentPassNumber = 1; currentPassNumber <= totalPassNumber; currentPassNumber++) {
             for (File file : files) {
 
+                if(!file.isFile()) {
+                    continue;
+                }
+
                 for (DatasetVisitor visitor : visitors) {
                     if (currentPassNumber <= visitor.getTotalPassNumber()) {
                         visitor.onOpeningFile(file, currentPassNumber);
