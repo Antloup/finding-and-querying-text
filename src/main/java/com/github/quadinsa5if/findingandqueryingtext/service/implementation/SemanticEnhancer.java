@@ -1,8 +1,11 @@
 package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.distances.CosinusSimilarity;
+import com.github.quadinsa5if.findingandqueryingtext.service.implementation.distances.EuclideanDistance;
+import com.github.quadinsa5if.findingandqueryingtext.service.implementation.distances.ManatthanDistance;
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.distances.VectorDistance;
 
+import java.io.*;
 import java.util.*;
 
 public class SemanticEnhancer {
@@ -17,10 +20,10 @@ public class SemanticEnhancer {
 
         Set<String> termsSet = new HashSet();
 
-        for(String term : terms) {
+        for (String term : terms) {
             termsSet.add(term);
 
-            for(String enhancedTerm : this.enhanceTerm(term, k, new CosinusSimilarity())) {
+            for (String enhancedTerm : this.enhanceTerm(term, k, new ManatthanDistance())) {
                 termsSet.add(enhancedTerm);
             }
         }
@@ -28,20 +31,16 @@ public class SemanticEnhancer {
         String[] result = new String[termsSet.size()];
 
         int i = 0;
-        for(String t : termsSet) {
+        for (String t : termsSet) {
             result[i++] = t;
         }
 
         return result;
     }
 
-    public void loadContextVectors(Map<String, int[]> contextVectors) {
-        this.contextVectors = contextVectors;
-    }
-
     private String[] enhanceTerm(String term, int k, VectorDistance vectorDistance) {
 
-        if(this.contextVectors.containsKey(term)) {
+        if (this.contextVectors.containsKey(term)) {
 
             int[] contextVectorReference = this.contextVectors.get(term);
 
@@ -55,10 +54,10 @@ public class SemanticEnhancer {
                         }
                     });
 
-            for(String t : this.contextVectors.keySet()) {
+            for (String t : this.contextVectors.keySet()) {
                 sortedQueue.add(t);
 
-                if(sortedQueue.size() > k) {
+                if (sortedQueue.size() > k) {
                     sortedQueue.poll();
                 }
             }
@@ -66,7 +65,7 @@ public class SemanticEnhancer {
             String[] result = new String[sortedQueue.size()];
 
             int i = 0;
-            for(String t : sortedQueue) {
+            for (String t : sortedQueue) {
                 result[i++] = t;
             }
 
@@ -76,5 +75,37 @@ public class SemanticEnhancer {
             return new String[0];
         }
 
+    }
+
+    public void loadContextVectorsFromFile(String filename) {
+
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(filename);
+
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        this.contextVectors = (HashMap) ois.readObject();
+        ois.close();
+        fis.close();
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Error loading context vectors from file");
+            e.printStackTrace();
+        }
+    }
+
+    public void loadAndSaveContextVectorsToFile(Map<String, int[]> contextVectors, String filename) {
+
+        this.contextVectors = contextVectors;
+
+        try {
+            FileOutputStream fos = new FileOutputStream(filename);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(this.contextVectors);
+            oos.close();
+            fos.close();
+        } catch (IOException e) {
+            System.err.println("Error saving context vectors in file");
+            e.printStackTrace();
+        }
     }
 }

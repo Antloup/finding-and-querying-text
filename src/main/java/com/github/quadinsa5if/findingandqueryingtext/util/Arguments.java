@@ -11,7 +11,8 @@ public enum Arguments {
     EXECUTE_TESTS("t", "test"),
     EXECUTE_BENCHMARK("b", "benchmark"),
     PRINT_HELP("h", "help"),
-    IMPROVE_QUERY("s", "synonym");
+    IMPROVE_QUERY("s", "synonym"),
+    CONTEXT_VECTORS_FILE("v", "context_vectors_file");
 
     public final String abbreviate;
     public final String full;
