@@ -51,9 +51,10 @@ public class StandardAction {
                     .expect("Something did wrong when building the inverted files");
             invertedFile = resultAfterBuilding.first;
             RandomIndexerImplementation randomIndexer = resultAfterBuilding.second;
-            semanticEnhancer.loadContextVectors(randomIndexer.getContextVectors());
+            semanticEnhancer.loadAndSaveContextVectorsToFile(randomIndexer.getContextVectors(), CONTEXT_VECTORS_FILE.full);
             System.out.println("Building inverted file done...");
         } else {
+            semanticEnhancer.loadContextVectorsFromFile(CONTEXT_VECTORS_FILE.full);
             invertedFile = outputFile;
         }
 
@@ -71,11 +72,9 @@ public class StandardAction {
         int k = parsedArguments.first;
         String[] terms = parsedArguments.second;
 
-        for(String t : terms) {
-            System.out.println(t);
-        }
-
         terms = semanticEnhancer.enhanceTerms(terms, 5);
+
+        System.out.println("Enhanced query");
 
         for(String t : terms) {
             System.out.println(t);
