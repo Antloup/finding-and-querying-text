@@ -10,10 +10,7 @@ import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileMerger;
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
 import com.github.quadinsa5if.findingandqueryingtext.service.MetadataSerializer;
 import com.github.quadinsa5if.findingandqueryingtext.service.QuerySolver;
-import com.github.quadinsa5if.findingandqueryingtext.service.implementation.InvertedFileSerializerImplementation;
-import com.github.quadinsa5if.findingandqueryingtext.service.implementation.MetadataImplementation;
-import com.github.quadinsa5if.findingandqueryingtext.service.implementation.MetadataSerializerImplementation;
-import com.github.quadinsa5if.findingandqueryingtext.service.implementation.ScorerImplementation;
+import com.github.quadinsa5if.findingandqueryingtext.service.implementation.*;
 import com.github.quadinsa5if.findingandqueryingtext.tokenizer.DocumentParser;
 import com.github.quadinsa5if.findingandqueryingtext.util.NaiveCompressor;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
@@ -45,12 +42,20 @@ public class StandardAction {
         final HeaderAndInvertedFile invertedFile;
         final HeaderAndInvertedFile outputFile = HeaderAndInvertedFile.autoSuffix(cl.getOptionValue(OUTPUT_FILE.full));
 
+        SemanticEnhancer semanticEnhancer = new SemanticEnhancer();
+
+
         if (mustBuildInvertedFile) {
-            invertedFile = buildInvertedFile(dataSetFolder, outputFile, 1000)
+            final Pair<HeaderAndInvertedFile, RandomIndexerImplementation> resultAfterBuilding =
+                    buildInvertedFile(dataSetFolder, outputFile, 1000)
                     .attempt()
                     .expect("Something did wrong when building the inverted files");
+            invertedFile = resultAfterBuilding.first;
+            RandomIndexerImplementation randomIndexer = resultAfterBuilding.second;
+            semanticEnhancer.loadAndSaveContextVectorsToFile(randomIndexer.getContextVectors(), CONTEXT_VECTORS_FILE.full);
             System.out.println("Building inverted file done...");
         } else {
+            semanticEnhancer.loadContextVectorsFromFile(CONTEXT_VECTORS_FILE.full);
             invertedFile = outputFile;
         }
 
@@ -67,6 +72,15 @@ public class StandardAction {
 
         int k = parsedArguments.first;
         String[] terms = parsedArguments.second;
+
+        terms = semanticEnhancer.enhanceTerms(terms, 5);
+
+        System.out.println("Enhanced query");
+
+        for(String t : terms) {
+            System.out.println(t);
+        }
+
         Iter<Integer> answer = querySolver.answer(voc, terms, k);
         for (int i : answer) {
             System.out.println("Article " + i);
@@ -75,20 +89,21 @@ public class StandardAction {
 
     }
 
-    public IO<HeaderAndInvertedFile> buildInvertedFile(
+    public IO<Pair<HeaderAndInvertedFile, RandomIndexerImplementation>> buildInvertedFile(
             File dataSetFolder,
             HeaderAndInvertedFile outputFile,
             int batchSize
     ) {
         ScorerImplementation scorerVisitor = new ScorerImplementation(serializer, batchSize);
         MetadataImplementation metadataVisitor = new MetadataImplementation(metadataSerializer);
+        RandomIndexerImplementation randomIndexerVisitor = new RandomIndexerImplementation();
 
-        DocumentParser parser = new DocumentParser(Arrays.asList(scorerVisitor, metadataVisitor));
+        DocumentParser parser = new DocumentParser(Arrays.asList(scorerVisitor, metadataVisitor, randomIndexerVisitor));
         parser.parse(dataSetFolder.listFiles());
 
         List<HeaderAndInvertedFile> partitions = scorerVisitor.getPartitions();
         final InvertedFileMerger merger = new InvertedFileMergerImpl(serializer);
-        return merger.merge(partitions, outputFile);
+        return merger.merge(partitions, outputFile).map( hfFile -> new Pair(hfFile, randomIndexerVisitor));
     }
 
     private File getDataSetFolder(@NotNull String path) {
@@ -140,5 +155,4 @@ public class StandardAction {
         }
 
     }
-
 }

@@ -1,4 +1,4 @@
-cd ./data
+cd ./dataset
 del temporary_file
 
 for %%f in (*) do (
