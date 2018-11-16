@@ -9,7 +9,7 @@ public class HelperAction {
     private final HelpFormatter helpFormatter = new HelpFormatter();
 
     public void run(@NotNull Options options) {
-        helpFormatter.printHelp("", options);
+        helpFormatter.printHelp("java -jar", options);
     }
 
 }

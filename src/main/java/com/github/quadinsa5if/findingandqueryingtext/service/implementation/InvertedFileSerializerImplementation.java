@@ -21,6 +21,7 @@ public class InvertedFileSerializerImplementation extends SerializerProperties i
     public final EncoderDecoder<Integer> compressor;
     private static final int FLOAT_PRECISION = 1000;
 
+    private final static int FLOAT_PRECISION = 1000;
     private final static byte zero = (byte)'0';
 
     public InvertedFileSerializerImplementation(EncoderDecoder<Integer> compressor) {
