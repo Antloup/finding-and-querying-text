@@ -46,7 +46,8 @@ public class StandardAction {
 
 
         if (mustBuildInvertedFile) {
-            Pair<HeaderAndInvertedFile, RandomIndexerImplementation> resultAfterBuilding = buildInvertedFile(dataSetFolder, outputFile, 10)
+            final Pair<HeaderAndInvertedFile, RandomIndexerImplementation> resultAfterBuilding =
+                    buildInvertedFile(dataSetFolder, outputFile, 1000)
                     .attempt()
                     .expect("Something did wrong when building the inverted files");
             invertedFile = resultAfterBuilding.first;
@@ -84,6 +85,7 @@ public class StandardAction {
         for (int i : answer) {
             System.out.println("Article " + i);
         }
+        System.out.println("End");
 
     }
 
