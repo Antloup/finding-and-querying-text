@@ -70,6 +70,7 @@ public class VByteCompressor extends Compressor {
     public IO<List<Entry>> getEntries(RandomAccessFile reader, int postingListOffset, int postingListLength) {
         return () -> {
             List<Entry> entries = new ArrayList<>();
+            List<Byte> encodedBytes = new ArrayList<>();
             reader.seek(postingListOffset);
             byte[] bytes = new byte[postingListLength];
             reader.read(bytes);
@@ -77,7 +78,6 @@ public class VByteCompressor extends Compressor {
             String id = "";
             int score = 0;
             boolean scorePart = false;
-            List<Integer> vbInt = new ArrayList<Integer>();
             for (byte b : bytes) {
                 if (b == PARTS_DELIMITER) {
                     scorePart = true;
@@ -87,19 +87,22 @@ public class VByteCompressor extends Compressor {
                     if (b == (byte) '.' || b == (byte) '0') continue;
                     else {
                         int it = (int) b & 0xFF;
-                        vbInt.add(it);
-                        if (it >= 128) {
-                            int i = vbInt.size() - 1;
-                            for (Integer it2 : vbInt) {
-                                if (it2 < 128) {
-                                    score += pow(128, i--) * it2;
+                        encodedBytes.add(b);
+                        if(it >= 128){
+                            score = this.decode(new Iter<Byte>() {
+                                int i = 0;
+                                @Override
+                                public Optional<Byte> next() {
+                                    if (i == encodedBytes.size()) {
+                                        return Optional.empty();
+                                    } else {
+                                        return Optional.of(encodedBytes.get(i++));
+                                    }
                                 }
-                            }
-                            score += it - 128;
+                            });
                             entries.add(new Entry(Integer.valueOf(id), Float.valueOf("0." + String.valueOf(score))));
-                            vbInt.clear();
                             id = "";
-                            score = 0;
+                            encodedBytes.clear();
                             scorePart = false;
                         }
                     }
