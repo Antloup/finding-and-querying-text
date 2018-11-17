@@ -60,10 +60,10 @@ object VByteCompressorTest : Spek({
                 assertThat(encoded.next().get(), equalTo(170.toByte())) // 128+42
             }
         }
-        on("complete encode/decode 577") {
-            val result = compressor.decode(compressor.encode(577))
-            it("should decode 42") {
-                assertThat(result, equalTo(577))
+        on("complete encode/decode 19403") {
+            val result = compressor.decode(compressor.encode(19403))
+            it("should decode 577") {
+                assertThat(result, equalTo(19403))
             }
         }
     }

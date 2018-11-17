@@ -28,7 +28,7 @@ public interface InvertedFileSerializer {
             HeaderAndInvertedFile ouputFile
     );
 
-    IO<Integer> writeEntries(List<Entry> entries, BufferedWriter writer);
+    IO<Integer> writeEntries(List<Entry> entries, DataOutputStream writer);
     IO<Unit> writeReversedIndexIdentifier(List<Pair<String, ReversedIndexIdentifier>> reversedIndexIdentifiers, BufferedWriter writer);
 
     /**

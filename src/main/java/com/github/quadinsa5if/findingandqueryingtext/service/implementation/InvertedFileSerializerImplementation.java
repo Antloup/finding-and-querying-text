@@ -2,14 +2,12 @@ package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 
 import com.github.quadinsa5if.findingandqueryingtext.exception.InvalidInvertedFileException;
 import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
-import com.github.quadinsa5if.findingandqueryingtext.lang.Iter;
 import com.github.quadinsa5if.findingandqueryingtext.lang.Pair;
 import com.github.quadinsa5if.findingandqueryingtext.lang.Unit;
 import com.github.quadinsa5if.findingandqueryingtext.model.*;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InMemoryVocabularyImpl;
 import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
-import com.github.quadinsa5if.findingandqueryingtext.util.EncoderDecoder;
-import com.github.quadinsa5if.findingandqueryingtext.util.Result;
+import com.github.quadinsa5if.findingandqueryingtext.util.Compressor;
 import com.github.quadinsa5if.findingandqueryingtext.service.SerializerProperties;
 
 import java.io.*;
@@ -18,19 +16,16 @@ import java.util.*;
 
 public class InvertedFileSerializerImplementation extends SerializerProperties implements InvertedFileSerializer {
 
-    public final EncoderDecoder<Integer> compressor;
+    public final Compressor compressor;
 
-    private final static int FLOAT_PRECISION = 1000;
-    private final static byte zero = (byte)'0';
-
-    public InvertedFileSerializerImplementation(EncoderDecoder<Integer> compressor) {
+    public InvertedFileSerializerImplementation(Compressor compressor) {
         this.compressor = compressor;
     }
 
     /**
      * @param fileFolder : path of the folder (without '/' at the end)
      */
-    public InvertedFileSerializerImplementation(String fileFolder, EncoderDecoder<Integer> compressor) {
+    public InvertedFileSerializerImplementation(String fileFolder, Compressor compressor) {
         super(fileFolder);
         this.compressor = compressor;
     }
@@ -47,7 +42,8 @@ public class InvertedFileSerializerImplementation extends SerializerProperties i
         return () -> {
             if (hfValidFile.createNewFile() && ifValidFile.createNewFile()) {
                 BufferedWriter hfbw = Files.newBufferedWriter(hfValidFile.toPath());
-                BufferedWriter ifbw = Files.newBufferedWriter(ifValidFile.toPath());
+                DataOutputStream ifbw = new DataOutputStream((new FileOutputStream(ifValidFile)));
+//                BufferedWriter ifbw = Files.newBufferedWriter(ifValidFile.toPath());
                 int offset = 0;
                 List<Pair<String, ReversedIndexIdentifier>> reversedIndexIdentifiers = new ArrayList<>();
                 for (String term : vocabulary.getTerms()) {
@@ -68,24 +64,12 @@ public class InvertedFileSerializerImplementation extends SerializerProperties i
     }
 
     @Override
-    public IO<Integer> writeEntries(List<Entry> entries, BufferedWriter writer) {
+    public IO<Integer> writeEntries(List<Entry> entries, DataOutputStream writer) {
         final StringBuilder stringBuilder = new StringBuilder();
         return () -> {
             int totalLength = 0;
             for (Entry entry : entries) {
-                Iter<Byte> bytes = compressor.encode(getDecimal(entry.score));
-
-                stringBuilder.setLength(0);
-                stringBuilder.append(entry.articleId)
-                        .append(PARTS_DELIMITER)
-                        .append((int) entry.score + ".");
-                for (Byte data : bytes) {
-                    stringBuilder.append(data);
-                }
-                stringBuilder.append(IDENTIFIERS_DELIMITER);
-                String res = stringBuilder.toString();
-                totalLength += res.length();
-                writer.write(res);
+                totalLength += compressor.putEntry(entry,writer).attempt().ok().get();
             }
             return totalLength;
         };
@@ -146,65 +130,8 @@ public class InvertedFileSerializerImplementation extends SerializerProperties i
     @Override
     public IO<List<Entry>> unserializePostingList(RandomAccessFile reader, int postingListOffset, int postingListLength) {
         return () -> {
-            List<Entry> entries = new ArrayList<>();
-
-            reader.seek(postingListOffset);
-            byte[] bytes = new byte[postingListLength];
-            reader.read(bytes);
-            String[] termPl = new String(bytes).split(String.valueOf(IDENTIFIERS_DELIMITER));
-
-            for (String term : termPl) {
-                if ("".equals(term)) {
-                    break;
-                }
-                String[] score = term.split(String.valueOf(PARTS_DELIMITER));
-                if (score.length != 2) {
-                    throw new InvalidInvertedFileException("Invalid inverted file between offset " + postingListOffset + " and " + (postingListOffset + postingListLength));
-                }
-
-                Integer decode = compressor.decode(getEncode(score[1].substring(score[1].indexOf('.') + 1)));
-                String decodedString = score[1].substring(0,score[1].indexOf('.')+1) + String.valueOf(decode);
-                entries.add(new Entry(Integer.valueOf(score[0]), Float.valueOf(decodedString)));
-            }
-            return entries;
+            return compressor.getEntries(reader,postingListOffset,postingListLength).attempt().ok().get();
         };
     }
 
-
-    /**
-     *
-     * @param f
-     * @return Decimal part of float
-     */
-    protected Integer getDecimal(float f) {
-        int lowerBound = (int) f;
-        float decimalPart = f - lowerBound;
-        return (int) decimalPart * FLOAT_PRECISION;
-    }
-
-    /**
-     *
-     * @param s
-     * @return Encoded part of the string
-     */
-    protected Iter<Byte> getEncode(String s){
-        byte[] encodedByte = s.getBytes();
-
-        for(int i=0;i < encodedByte.length;i++){
-            encodedByte[i] -= zero;
-        }
-
-        return new Iter<Byte>() {
-            int i = 0;
-
-            @Override
-            public Optional<Byte> next() {
-                if (i == encodedByte.length) {
-                    return Optional.empty();
-                } else {
-                    return Optional.of(encodedByte[i++]);
-                }
-            }
-        };
-    }
 }
