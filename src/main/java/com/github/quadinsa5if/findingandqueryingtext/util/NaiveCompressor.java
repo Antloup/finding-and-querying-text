@@ -13,6 +13,10 @@ public class NaiveCompressor extends Compressor implements EncoderDecoder<Intege
     private final static byte ZERO = (byte)'0';
     private final static byte DELIMITER = (byte)';';
 
+    public NaiveCompressor() {
+        this.separator = true;
+    }
+
     @Override
     public Integer decode(Iter<Byte> msg) {
         int sum = 0;
@@ -37,7 +41,6 @@ public class NaiveCompressor extends Compressor implements EncoderDecoder<Intege
         for(byte b: String.valueOf(input).getBytes()) {
             bytes.add(b);
         }
-        bytes.add(DELIMITER);
 
         return new Iter<Byte>() {
             int i = 0;
@@ -72,7 +75,7 @@ public class NaiveCompressor extends Compressor implements EncoderDecoder<Intege
 
                 Integer decode = this.decode(getEncode(score[1].substring(score[1].indexOf('.') + 1)));
                 String decodedString = score[1].substring(0, score[1].indexOf('.') + 1) + String.valueOf(decode);
-                entries.add(new Entry(Integer.valueOf(score[0]), Float.valueOf(decodedString)));
+                entries.add(new Entry(this.decode(getEncode(score[0])), Float.valueOf(decodedString)));
             }
             return entries;
         };

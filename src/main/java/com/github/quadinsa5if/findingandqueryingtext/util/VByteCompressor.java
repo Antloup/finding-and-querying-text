@@ -13,6 +13,10 @@ import static java.lang.Math.pow;
 
 public class VByteCompressor extends Compressor {
 
+    public VByteCompressor() {
+        this.separator = false;
+    }
+
     @Override
     public Integer decode(Iter<Byte> msg) {
         int sum = 0;
@@ -76,20 +80,39 @@ public class VByteCompressor extends Compressor {
             reader.read(bytes);
 
             String id = "";
-            int score = 0;
             boolean scorePart = false;
+            boolean digitChecked = false;
             for (byte b : bytes) {
-                if (b == PARTS_DELIMITER) {
-                    scorePart = true;
-                } else if (!scorePart) {
-                    id += (char) b;
+                if (!scorePart) {
+                    int it = (int) b & 0xFF;
+                    encodedBytes.add(b);
+                    if(it >= 128){
+                        int idInt = this.decode(new Iter<Byte>() {
+                            int i = 0;
+                            @Override
+                            public Optional<Byte> next() {
+                                if (i == encodedBytes.size()) {
+                                    return Optional.empty();
+                                } else {
+                                    return Optional.of(encodedBytes.get(i++));
+                                }
+                            }
+                        });
+                        id = String.valueOf(idInt);
+                        encodedBytes.clear();
+                        scorePart = true;
+                    }
                 } else {
-                    if (b == (byte) '.' || b == (byte) '0') continue;
+                    if (b == (byte) '.' ) digitChecked = true;
+                    else if(b == (byte) '1' && !digitChecked){
+                        entries.add(new Entry(Integer.valueOf(id), 1f));
+                        digitChecked = false;
+                    }
                     else {
                         int it = (int) b & 0xFF;
                         encodedBytes.add(b);
                         if(it >= 128){
-                            score = this.decode(new Iter<Byte>() {
+                            int score = this.decode(new Iter<Byte>() {
                                 int i = 0;
                                 @Override
                                 public Optional<Byte> next() {
@@ -104,6 +127,7 @@ public class VByteCompressor extends Compressor {
                             id = "";
                             encodedBytes.clear();
                             scorePart = false;
+                            digitChecked = false;
                         }
                     }
 

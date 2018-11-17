@@ -12,22 +12,42 @@ public abstract class Compressor implements EncoderDecoder<Integer>{
 
     public static final char PARTS_DELIMITER = ':';
     public static final char IDENTIFIERS_DELIMITER = ';';
-    private final static int FLOAT_PRECISION = 1000;
+    protected final static int FLOAT_PRECISION = 1000;
+    protected static boolean separator = true;
 
     public IO<Integer> putEntry(Entry entry, DataOutputStream writer){
         return () -> {
             int length = 0;
-            final StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.setLength(0);
-            stringBuilder.append(entry.articleId)
-                    .append(PARTS_DELIMITER)
-                    .append((int) entry.score + ".");
-            String res = stringBuilder.toString();
-            length += res.length();
-            writer.write(res.getBytes());
-            Iter<Byte> bytes = this.encode(getDecimal(entry.score));
+            Iter<Byte> bytes = this.encode(entry.articleId);
             for (Byte b : bytes) {
                 writer.write(b);
+                length++;
+            }
+
+            if(separator) {
+                writer.write((byte) PARTS_DELIMITER);
+                length++;
+            }
+            if((int)entry.score == 1){
+                writer.write('1');
+                length++;
+                if(separator){
+                    writer.write((byte)';');
+                    length++;
+                }
+
+                return length;
+            }
+            writer.write((byte)'.');
+            length++;
+            bytes = this.encode(getDecimal(entry.score));
+            for (Byte b : bytes) {
+                writer.write(b);
+                length++;
+            }
+
+            if(separator){
+                writer.write((byte)';');
                 length++;
             }
 
