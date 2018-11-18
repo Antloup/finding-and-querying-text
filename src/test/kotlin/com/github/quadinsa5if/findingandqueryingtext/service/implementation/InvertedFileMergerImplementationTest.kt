@@ -26,8 +26,9 @@ object InvertedFileMergerImplementationTest : Spek({
       Pair("t2", ReversedIndexIdentifier(6, 15))
   )
   val headers = mutableListOf(header1, header2)
-  val file = File("fake_inverted_file.txt")
+  val file = File("tmp_test/fake_inverted_file.txt")
   if (!file.exists()) {
+    file.parentFile.mkdirs()
     file.createNewFile()
   }
   val fakeInvertedFiles = mutableListOf(

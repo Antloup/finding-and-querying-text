@@ -17,7 +17,7 @@ import java.io.RandomAccessFile
 
 @RunWith(JUnitPlatform::class)
 object MetadataSerializerImplementationTest : Spek({
-    val TEST_FOLDER_NAME = "fileTest/novb"
+    val TEST_FOLDER_NAME = "tmp_test/novb"
 
     val testDirectory = File(TEST_FOLDER_NAME)
     if (!testDirectory.exists()) {

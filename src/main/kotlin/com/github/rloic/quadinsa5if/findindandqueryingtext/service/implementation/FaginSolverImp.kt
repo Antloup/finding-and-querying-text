@@ -93,12 +93,10 @@ class FaginSolverImp : QuerySolver {
 
     fun aggregate(articleToScores: Map.Entry<ArticleId, Map<Term, Score>>): Pair<ArticleId, Score> {
         var score = 0f
-        var count = 0
         for (scoreEntry in articleToScores.value) {
             score += scoreEntry.value
-            count += 1
         }
-        return articleToScores.key to ( score / count )
+        return articleToScores.key to score
 
     }
 

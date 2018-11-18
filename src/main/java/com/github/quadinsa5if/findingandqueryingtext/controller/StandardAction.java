@@ -11,6 +11,7 @@ import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSeriali
 import com.github.quadinsa5if.findingandqueryingtext.service.MetadataSerializer;
 import com.github.quadinsa5if.findingandqueryingtext.service.QuerySolver;
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.*;
+import com.github.quadinsa5if.findingandqueryingtext.service.implementation.distances.CosinusSimilarity;
 import com.github.quadinsa5if.findingandqueryingtext.tokenizer.DocumentParser;
 import com.github.quadinsa5if.findingandqueryingtext.util.NaiveCompressor;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
@@ -42,8 +43,7 @@ public class StandardAction {
         final HeaderAndInvertedFile invertedFile;
         final HeaderAndInvertedFile outputFile = HeaderAndInvertedFile.autoSuffix(cl.getOptionValue(OUTPUT_FILE.full));
 
-        SemanticEnhancer semanticEnhancer = new SemanticEnhancer();
-
+        SemanticEnhancer semanticEnhancer = new SemanticEnhancer(new CosinusSimilarity());
 
         if (mustBuildInvertedFile) {
             final Pair<HeaderAndInvertedFile, RandomIndexerImplementation> resultAfterBuilding =

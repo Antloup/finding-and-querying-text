@@ -26,7 +26,7 @@ object ParsingTest : Spek({
             val randomIndexerVisitor = RandomIndexerImplementation()
 
             val parser = DocumentParser(Arrays.asList(scorerVisitor, metadataVisitor, randomIndexerVisitor))
-            val datasetFiles: Array<File> = arrayOf(File("test_data/mini_bible"))
+            val datasetFiles: Array<File> = arrayOf(File("tmp_test/mini_bible"))
             parser.parse(datasetFiles)
 
             val allScores = scorerVisitor.allScores
@@ -46,8 +46,8 @@ object ParsingTest : Spek({
                 assertThat("'mercy' word isn't in article 4", allScores.containsKey("4_mercy"), equalTo(false))
             }
 
-            val articleHeader1 = ArticleHeader(1,"test_data\\mini_bible").equals(metadataVisitor.getArticleHeader(1).get())
-            val articleHeader4 = ArticleHeader(4,"test_data\\mini_bible").equals(metadataVisitor.getArticleHeader(4).get())
+            val articleHeader1 = ArticleHeader(1,"tmp_test/mini_bible").equals(metadataVisitor.getArticleHeader(1).get())
+            val articleHeader4 = ArticleHeader(4,"tmp_test/mini_bible").equals(metadataVisitor.getArticleHeader(4).get())
             val articleHeaderUnknown = Optional.empty<ArticleHeader>() == metadataVisitor.getArticleHeader(100)
             it("have store metadata"){
                 assertThat("article 1 is in the file", articleHeader1, equalTo(true))

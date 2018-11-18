@@ -20,7 +20,7 @@ import java.io.RandomAccessFile
 @RunWith(JUnitPlatform::class)
 object InvertedFileSerializerImplementationTest: Spek({
 
-  val TEST_FOLDER_NAME = "test_folder_inverted_file_serializer"
+  val TEST_FOLDER_NAME = "tmp_test/if"
   val testDirectory = File(TEST_FOLDER_NAME)
 
   if (!testDirectory.exists()) {

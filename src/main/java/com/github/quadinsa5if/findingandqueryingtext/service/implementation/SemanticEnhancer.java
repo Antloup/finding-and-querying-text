@@ -1,8 +1,6 @@
 package com.github.quadinsa5if.findingandqueryingtext.service.implementation;
 
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.distances.CosinusSimilarity;
-import com.github.quadinsa5if.findingandqueryingtext.service.implementation.distances.EuclideanDistance;
-import com.github.quadinsa5if.findingandqueryingtext.service.implementation.distances.ManatthanDistance;
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.distances.VectorDistance;
 
 import java.io.*;
@@ -11,9 +9,14 @@ import java.util.*;
 public class SemanticEnhancer {
 
     private Map<String, int[]> contextVectors;
+    private final VectorDistance distance;
 
     public SemanticEnhancer() {
+        this.distance = new CosinusSimilarity();
+    }
 
+    public SemanticEnhancer(VectorDistance distance) {
+        this.distance = distance;
     }
 
     public String[] enhanceTerms(String[] terms, int k) {
@@ -23,7 +26,7 @@ public class SemanticEnhancer {
         for (String term : terms) {
             termsSet.add(term);
 
-            for (String enhancedTerm : this.enhanceTerm(term, k, new ManatthanDistance())) {
+            for (String enhancedTerm : this.enhanceTerm(term, k, distance)) {
                 termsSet.add(enhancedTerm);
             }
         }
@@ -45,13 +48,10 @@ public class SemanticEnhancer {
             int[] contextVectorReference = this.contextVectors.get(term);
 
             PriorityQueue<String> sortedQueue =
-                    new PriorityQueue<String>(10, new Comparator<String>() {
-                        @Override
-                        public int compare(String t1, String t2) {
-                            double dist1 = vectorDistance.compute(contextVectors.get(t1), contextVectorReference);
-                            double dist2 = vectorDistance.compute(contextVectors.get(t2), contextVectorReference);
-                            return vectorDistance.isBetter(dist1, dist2) ? 1 : -1;
-                        }
+                    new PriorityQueue<String>(10, (t1, t2) -> {
+                        double dist1 = vectorDistance.compute(contextVectors.get(t1), contextVectorReference);
+                        double dist2 = vectorDistance.compute(contextVectors.get(t2), contextVectorReference);
+                        return vectorDistance.isBetter(dist1, dist2) ? 1 : -1;
                     });
 
             for (String t : this.contextVectors.keySet()) {

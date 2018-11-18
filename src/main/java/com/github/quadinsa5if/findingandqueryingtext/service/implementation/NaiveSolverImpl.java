@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.averagingDouble;
+import static java.util.stream.Collectors.summingDouble;
 
 public class NaiveSolverImpl implements QuerySolver {
 
@@ -27,7 +28,7 @@ public class NaiveSolverImpl implements QuerySolver {
 
     final Map<Integer, Double> mergedScores = postingListForTerms
         .stream()
-        .collect(Collectors.groupingBy(Entry::articleId, averagingDouble(Entry::score)));
+        .collect(Collectors.groupingBy(Entry::articleId, summingDouble(Entry::score)));
 
     final List<Integer> bestKScores = mergedScores.entrySet()
         .stream()
