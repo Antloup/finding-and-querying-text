@@ -103,12 +103,7 @@ public class VByteCompressor extends Compressor {
                         scorePart = true;
                     }
                 } else {
-                    if (b == (byte) '.' ) digitChecked = true;
-                    else if(b == (byte) '1' && !digitChecked){
-                        entries.add(new Entry(Integer.valueOf(id), 1f));
-                        digitChecked = false;
-                    }
-                    else {
+                    if(digitChecked){
                         int it = (int) b & 0xFF;
                         encodedBytes.add(b);
                         if(it >= 128){
@@ -124,11 +119,15 @@ public class VByteCompressor extends Compressor {
                                 }
                             });
                             entries.add(new Entry(Integer.valueOf(id), Float.valueOf("0." + String.valueOf(score))));
-                            id = "";
                             encodedBytes.clear();
                             scorePart = false;
                             digitChecked = false;
                         }
+                    }
+                    else if (b == (byte) '.' ) digitChecked = true;
+                    else if(b == (byte) '1'){
+                        entries.add(new Entry(Integer.valueOf(id), 1f));
+                        digitChecked = false;
                     }
 
                 }
