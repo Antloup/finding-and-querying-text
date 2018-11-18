@@ -1,18 +1,21 @@
 package com.github.quadinsa5if.findingandqueryingtext.util;
 
+import com.github.quadinsa5if.findingandqueryingtext.exception.InvalidInvertedFileException;
+import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
 import com.github.quadinsa5if.findingandqueryingtext.lang.Iter;
+import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.io.RandomAccessFile;
+import java.util.*;
 
-public class NaiveCompressor implements EncoderDecoder<Integer> {
+public class NaiveCompressor extends Compressor implements EncoderDecoder<Integer> {
 
-    private static byte PARTS_DELIMITER = (byte) ':';
-    private static byte POSTING_LIST_DELIMITER = (byte) ';';
-    private static byte ZERO = (byte) '0';
+    private final static byte ZERO = (byte)'0';
+    private final static byte DELIMITER = (byte)';';
+
+    public NaiveCompressor() {
+        this.separator = true;
+    }
 
     @Override
     public Integer decode(Iter<Byte> msg) {
@@ -20,8 +23,11 @@ public class NaiveCompressor implements EncoderDecoder<Integer> {
         Optional<Byte> current = msg.next();
         while (current.isPresent()) {
             byte it = current.get();
+            if(it == DELIMITER){
+                break;
+            }
             sum *= 10;
-            sum += (int)it;
+            sum += (int) it - ZERO;
             current = msg.next();
         }
 
@@ -30,21 +36,14 @@ public class NaiveCompressor implements EncoderDecoder<Integer> {
 
     @Override
     public Iter<Byte> encode(Integer input) {
+
         List<Byte> bytes = new ArrayList<>();
-
-        LinkedList<Integer> stack = new LinkedList<>();
-        while (input > 0) {
-            stack.push( input % 10 );
-            input = input / 10;
-        }
-
-        while (!stack.isEmpty()) {
-            bytes.add(stack.pop().byteValue());
+        for(byte b: String.valueOf(input).getBytes()) {
+            bytes.add(b);
         }
 
         return new Iter<Byte>() {
             int i = 0;
-
             @Override
             public Optional<Byte> next() {
                 if (i == bytes.size()) {
@@ -56,4 +55,51 @@ public class NaiveCompressor implements EncoderDecoder<Integer> {
         };
 
     }
+
+    public IO<List<Entry>> getEntries(RandomAccessFile reader, int postingListOffset, int postingListLength){
+        return () -> {
+            List<Entry> entries = new ArrayList<>();
+            reader.seek(postingListOffset);
+            byte[] bytes = new byte[postingListLength];
+            reader.read(bytes);
+            String[] termPl = new String(bytes).split(String.valueOf(IDENTIFIERS_DELIMITER));
+
+            for (String term : termPl) {
+                if ("".equals(term)) {
+                    break;
+                }
+                String[] score = term.split(String.valueOf(PARTS_DELIMITER));
+                if (score.length != 2) {
+                    throw new InvalidInvertedFileException("Invalid inverted file between offset " + postingListOffset + " and " + (postingListOffset + postingListLength));
+                }
+
+                Integer decode = this.decode(getEncode(score[1].substring(score[1].indexOf('.') + 1)));
+                String decodedString = score[1].substring(0, score[1].indexOf('.') + 1) + String.valueOf(decode);
+                entries.add(new Entry(this.decode(getEncode(score[0])), Float.valueOf(decodedString)));
+            }
+            return entries;
+        };
+    }
+
+    /**
+     * @param s
+     * @return Encoded part of the string
+     */
+    protected Iter<Byte> getEncode(String s) {
+        byte[] encodedByte = s.getBytes();
+
+        return new Iter<Byte>() {
+            int i = 0;
+
+            @Override
+            public Optional<Byte> next() {
+                if (i == encodedByte.length) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(encodedByte[i++]);
+                }
+            }
+        };
+    }
+
 }

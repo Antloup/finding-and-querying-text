@@ -17,7 +17,7 @@ object NaiveCompressorTest : Spek({
 
     val compressor = NaiveCompressor()
 
-    val encodedArray = listOf(42)
+    val encodedArray = listOf(52, 50, 59)
     val encodedByte = object : Iter<Byte> {
         var i = 0
         override fun next(): Optional<Byte> {
@@ -39,7 +39,7 @@ object NaiveCompressorTest : Spek({
         on("decoded 4") {
             val decoded = compressor.encode(4)
             it("should decode 4") {
-                assertThat(decoded.next().get(), equalTo(4.toByte()))
+                assertThat(decoded.next().get(), equalTo('4'.toByte()))
             }
         }
         on("complete encode/decode 42") {
