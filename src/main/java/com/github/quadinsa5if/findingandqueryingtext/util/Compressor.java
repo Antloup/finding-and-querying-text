@@ -38,6 +38,16 @@ public abstract class Compressor implements EncoderDecoder<Integer>{
 
                 return length;
             }
+            else if(entry.score == 0){
+                writer.write('0');
+                length++;
+                if(separator){
+                    writer.write((byte)';');
+                    length++;
+                }
+
+                return length;
+            }
             writer.write((byte)'.');
             length++;
             bytes = this.encode(getDecimal(entry.score));

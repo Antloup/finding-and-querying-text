@@ -128,6 +128,12 @@ public class VByteCompressor extends Compressor {
                     else if(b == (byte) '1'){
                         entries.add(new Entry(Integer.valueOf(id), 1f));
                         digitChecked = false;
+                        scorePart = false;
+                    }
+                    else if(b == (byte) '0'){
+                        entries.add(new Entry(Integer.valueOf(id), 0f));
+                        digitChecked = false;
+                        scorePart = false;
                     }
 
                 }
