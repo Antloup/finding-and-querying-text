@@ -7,8 +7,10 @@ import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSeriali
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.InvertedFileSerializerImplementation;
 import com.github.quadinsa5if.findingandqueryingtext.util.Cache;
 import com.github.quadinsa5if.findingandqueryingtext.util.NaiveCompressor;
+import com.github.quadinsa5if.findingandqueryingtext.util.Result;
 
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -31,20 +33,22 @@ public class InDiskVocabularyImpl implements Vocabulary {
      */
     private final Map<String, ReversedIndexIdentifier> reversedIndexIdentifiers;
 
-    /**
-     * An inverted file serializer
-     */
-    private final InvertedFileSerializer serializer;
 
-    public InDiskVocabularyImpl(final FileReader headerFile, final RandomAccessFile postingListFile, int cacheSize) {
-        serializer = new InvertedFileSerializerImplementation(new NaiveCompressor());
+
+    public InDiskVocabularyImpl(
+            final InvertedFileSerializer serializer,
+            final FileReader headerFile,
+            final RandomAccessFile postingListFile,
+            int cacheSize
+    ) {
         reversedIndexIdentifiers = serializer.unserializeHeader(headerFile)
                 .attempt()
                 .unwrap();
         cache = new Cache<>(cacheSize, term -> {
             final Optional<ReversedIndexIdentifier> postingListIdentifier = Optional.ofNullable(reversedIndexIdentifiers.get(term));
-            return postingListIdentifier.map(it -> serializer.unserializePostingList(postingListFile, it.offset, it.length).attempt().unwrap())
-                    .orElse(new ArrayList<>());
+            return postingListIdentifier.map(it ->
+                    serializer.unserializePostingList(postingListFile, it.offset, it.length).attempt().unwrap()
+            ).orElse(new ArrayList<>());
         });
     }
 

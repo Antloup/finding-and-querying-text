@@ -16,7 +16,7 @@ import java.util.*;
 
 public class InvertedFileSerializerImplementation extends SerializerProperties implements InvertedFileSerializer {
 
-    public final Compressor compressor;
+    private final Compressor compressor;
 
     public InvertedFileSerializerImplementation(Compressor compressor) {
         this.compressor = compressor;
@@ -42,9 +42,8 @@ public class InvertedFileSerializerImplementation extends SerializerProperties i
         return () -> {
             if (hfValidFile.createNewFile() && ifValidFile.createNewFile()) {
                 BufferedWriter hfbw = Files.newBufferedWriter(hfValidFile.toPath());
-                DataOutputStream ifbw = new DataOutputStream((new FileOutputStream(ifValidFile)));
-//                BufferedWriter ifbw = Files.newBufferedWriter(ifValidFile.toPath());
-                int offset = 0;
+                DataOutputStream ifbw = new DataOutputStream(new FileOutputStream(ifValidFile));
+               int offset = 0;
                 List<Pair<String, ReversedIndexIdentifier>> reversedIndexIdentifiers = new ArrayList<>();
                 for (String term : vocabulary.getTerms()) {
                     int length = writeEntries(vocabulary.getPostingList(term), ifbw).sync();
@@ -65,20 +64,29 @@ public class InvertedFileSerializerImplementation extends SerializerProperties i
 
     @Override
     public IO<Integer> writeEntries(List<Entry> entries, DataOutputStream writer) {
-        final StringBuilder stringBuilder = new StringBuilder();
         return () -> {
-            int totalLength = 0;
+            List<Byte> buffer = new ArrayList<>();
             for (Entry entry : entries) {
-                totalLength += compressor.putEntry(entry,writer).attempt().ok().get();
+                compressor.putEntry(entry,buffer);
             }
-            return totalLength;
+            writer.write(byteArrayOf(buffer));
+            return buffer.size();
         };
+    }
+
+    private static byte[] byteArrayOf(List<Byte> bytes) {
+        byte[] result = new byte[bytes.size()];
+        for (int i = 0; i < bytes.size(); i++) {
+            result[i] = bytes.get(i);
+        }
+        return result;
     }
 
     @Override
     public IO<Unit> writeReversedIndexIdentifier(List<Pair<String, ReversedIndexIdentifier>> reversedIndexIdentifiers, BufferedWriter writer) {
         final StringBuilder stringBuilder = new StringBuilder();
         return () -> {
+            List<Byte> bytes = new ArrayList<>();
             for (Pair<String, ReversedIndexIdentifier> rIdx : reversedIndexIdentifiers) {
                 stringBuilder.setLength(0);
                 stringBuilder.append(rIdx.first)
@@ -129,9 +137,7 @@ public class InvertedFileSerializerImplementation extends SerializerProperties i
 
     @Override
     public IO<List<Entry>> unserializePostingList(RandomAccessFile reader, int postingListOffset, int postingListLength) {
-        return () -> {
-            return compressor.getEntries(reader,postingListOffset,postingListLength).attempt().ok().get();
-        };
+        return compressor.getEntries(reader,postingListOffset,postingListLength);
     }
 
 }

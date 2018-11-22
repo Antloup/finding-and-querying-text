@@ -17,7 +17,7 @@ object NaiveCompressorTest : Spek({
 
     val compressor = NaiveCompressor()
 
-    val encodedArray = listOf(52, 50, 59)
+    val encodedArray = listOf(52, 50, 58)
     val encodedByte = object : Iter<Byte> {
         var i = 0
         override fun next(): Optional<Byte> {

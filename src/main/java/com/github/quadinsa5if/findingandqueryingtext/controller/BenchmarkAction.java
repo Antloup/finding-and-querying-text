@@ -1,12 +1,20 @@
 package com.github.quadinsa5if.findingandqueryingtext.controller;
 
+import com.github.quadinsa5if.findingandqueryingtext.lang.Pair;
 import com.github.quadinsa5if.findingandqueryingtext.model.HeaderAndInvertedFile;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.Vocabulary;
 import com.github.quadinsa5if.findingandqueryingtext.model.vocabulary.implementation.InDiskVocabularyImpl;
+import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileMerger;
+import com.github.quadinsa5if.findingandqueryingtext.service.InvertedFileSerializer;
+import com.github.quadinsa5if.findingandqueryingtext.service.MetadataSerializer;
 import com.github.quadinsa5if.findingandqueryingtext.service.QuerySolver;
-import com.github.quadinsa5if.findingandqueryingtext.service.implementation.NaiveSolverImpl;
+import com.github.quadinsa5if.findingandqueryingtext.service.implementation.*;
+import com.github.quadinsa5if.findingandqueryingtext.tokenizer.DocumentParser;
+import com.github.quadinsa5if.findingandqueryingtext.util.NaiveCompressor;
+import com.github.quadinsa5if.findingandqueryingtext.util.VByteCompressor;
 import com.github.rloic.quadinsa5if.findindandqueryingtext.benchmark.Benchmark;
 import com.github.rloic.quadinsa5if.findindandqueryingtext.service.implementation.FaginSolverImp;
+import com.github.rloic.quadinsa5if.findindandqueryingtext.service.implementation.InvertedFileMergerImpl;
 import kotlin.Unit;
 
 import java.io.File;
@@ -18,7 +26,8 @@ import java.util.List;
 public class BenchmarkAction {
 
     private final Benchmark benchmark = new Benchmark();
-    private final StandardAction standardAction = new StandardAction();
+    private final InvertedFileSerializer serializer = new InvertedFileSerializerImplementation(new NaiveCompressor());
+    private final MetadataSerializer metadataSerializer = new MetadataSerializerImplementation();
 
     private static final File benchDataSetFolder = new File("benchmark/dataset");
     private static final HeaderAndInvertedFile benchInvertedFile = HeaderAndInvertedFile.autoSuffix("benchmark/FILE");
@@ -30,13 +39,44 @@ public class BenchmarkAction {
 
     private void benchBuildInvertedIndex() {
         final List<Integer> batchSizes = Arrays.asList(100, 1_000, 10_000, 100_000);
+
+        benchmark.bench(
+                "build inverted index with vByteCompression",
+                "batch size",
+                batchSizes,
+                1,
+                batchSize -> {
+                    InvertedFileSerializer serializer = new InvertedFileSerializerImplementation(new VByteCompressor());
+                    ScorerImplementation scorerVisitor = new ScorerImplementation(serializer, batchSize);
+                    MetadataImplementation metadataVisitor = new MetadataImplementation(metadataSerializer);
+                    RandomIndexerImplementation randomIndexerVisitor = new RandomIndexerImplementation();
+
+                    DocumentParser parser = new DocumentParser(Arrays.asList(scorerVisitor, metadataVisitor, randomIndexerVisitor));
+                    parser.parse(benchDataSetFolder.listFiles());
+
+                    List<HeaderAndInvertedFile> partitions = scorerVisitor.getPartitions();
+                    final InvertedFileMerger merger = new InvertedFileMergerImpl(serializer);
+                    merger.merge(partitions, benchInvertedFile).map(hfFile -> new Pair(hfFile, randomIndexerVisitor)).attempt();
+                    return Unit.INSTANCE;
+                }
+        );
+
         benchmark.bench(
                 "build inverted index",
                 "batch size",
                 batchSizes,
                 1,
                 batchSize -> {
-                    standardAction.buildInvertedFile(benchDataSetFolder, benchInvertedFile, batchSize).attempt();
+                    ScorerImplementation scorerVisitor = new ScorerImplementation(serializer, batchSize);
+                    MetadataImplementation metadataVisitor = new MetadataImplementation(metadataSerializer);
+                    RandomIndexerImplementation randomIndexerVisitor = new RandomIndexerImplementation();
+
+                    DocumentParser parser = new DocumentParser(Arrays.asList(scorerVisitor, metadataVisitor, randomIndexerVisitor));
+                    parser.parse(benchDataSetFolder.listFiles());
+
+                    List<HeaderAndInvertedFile> partitions = scorerVisitor.getPartitions();
+                    final InvertedFileMerger merger = new InvertedFileMergerImpl(serializer);
+                    merger.merge(partitions, benchInvertedFile).map(hfFile -> new Pair(hfFile, randomIndexerVisitor)).attempt();
                     return Unit.INSTANCE;
                 }
         );
@@ -160,6 +200,7 @@ public class BenchmarkAction {
     private void runQuery(String[] terms, int k, QuerySolver solver) {
         try {
             Vocabulary voc = new InDiskVocabularyImpl(
+                    serializer,
                     new FileReader(benchInvertedFile.headerFile),
                     new RandomAccessFile(benchInvertedFile.invertedFile, "r"),
                     1_000

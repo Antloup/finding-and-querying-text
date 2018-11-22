@@ -18,8 +18,8 @@ public class DocumentParser {
 
     private static char[] ESCAPED = new char[]{
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', // Digits
-            '?', ',', '.', ';', '?', ':', '!', '\'', '"', '(', ')', '{', '}', '[', ']', // Punctuation
-            '&', '$', '£', '€', // Special characters
+            '?', ',', '.', ';', '?', ':', '!', '\'', '\\', '/', '"', '(', ')', '{', '}', '[', ']', // Punctuation
+            '&', '$', '£', '€', '#', // Special characters
             '+', '-', '*', '%', '=' // Operators
     };
     private static String[] WHITE_SPACES = new String[]{" ", "\t", "\n", "\r\n"};
@@ -141,14 +141,20 @@ public class DocumentParser {
             char c = text.charAt(i);
             if (!contains(ignored, c)) {
                 buffer.append(Character.toLowerCase(c));
-            }
-            for (String delimiter : delimiters) {
-                if (endsWith(buffer, delimiter)) {
-                    removeSuffix(buffer, delimiter);
-                    if (buffer.length() > 0) {
-                        tokens.add(buffer.toString());
-                        buffer.setLength(0);
+
+                for (String delimiter : delimiters) {
+                    if (endsWith(buffer, delimiter)) {
+                        removeSuffix(buffer, delimiter);
+                        if (buffer.length() > 0) {
+                            tokens.add(buffer.toString());
+                            buffer.setLength(0);
+                        }
                     }
+                }
+            } else {
+                if(buffer.length() > 0) {
+                    tokens.add(buffer.toString());
+                    buffer.setLength(0);
                 }
             }
         }

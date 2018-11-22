@@ -30,7 +30,7 @@ object InvertedFileSerializerImplementationTest: Spek({
     testDirectory.listFiles().forEach { it.delete() }
   }
 
-  val serializer: InvertedFileSerializer = InvertedFileSerializerImplementation(TEST_FOLDER_NAME, VByteCompressor())
+  val serializer: InvertedFileSerializer = InvertedFileSerializerImplementation(TEST_FOLDER_NAME, NaiveCompressor())
 
   val d1 = 1
   val d2 = 2
@@ -80,7 +80,7 @@ object InvertedFileSerializerImplementationTest: Spek({
   }
 
   given("the serialized files") {
-    val result = serializer.serialize(postingLists, getHeaderAndInvertedFile()).attempt().unwrap()
+    val result = serializer.serialize(postingLists, getHeaderAndInvertedFile()).sync()
     val headerFile = result.headerFile!!
     val invertedFile = result.invertedFile!!
 
@@ -93,12 +93,12 @@ object InvertedFileSerializerImplementationTest: Spek({
 
     on("unserialize vocabulary from header") {
       val headerResult = serializer.unserializeHeader(FileReader(headerFile)).attempt()
-      val vocResult = serializer.unserialize(RandomAccessFile(invertedFile, "r"), headerResult.ok().get()).attempt()
+      val vocResult = serializer.unserialize(RandomAccessFile(invertedFile, "r"), headerResult.unwrap()).attempt()
       it("result must be ok") {
         assertThat(vocResult.isOk, equalTo(true))
       }
       it("result me be equals to the serialized posting list") {
-        assertThat(vocResult.ok().get(), equalTo(postingLists))
+        assertThat(vocResult.unwrap(), equalTo(postingLists))
       }
     }
   }

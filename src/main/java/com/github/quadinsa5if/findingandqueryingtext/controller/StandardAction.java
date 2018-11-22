@@ -13,8 +13,10 @@ import com.github.quadinsa5if.findingandqueryingtext.service.QuerySolver;
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.*;
 import com.github.quadinsa5if.findingandqueryingtext.service.implementation.distances.CosinusSimilarity;
 import com.github.quadinsa5if.findingandqueryingtext.tokenizer.DocumentParser;
+import com.github.quadinsa5if.findingandqueryingtext.util.Compressor;
 import com.github.quadinsa5if.findingandqueryingtext.util.NaiveCompressor;
 import com.github.quadinsa5if.findingandqueryingtext.util.Result;
+import com.github.quadinsa5if.findingandqueryingtext.util.VByteCompressor;
 import com.github.rloic.quadinsa5if.findindandqueryingtext.service.implementation.FaginSolverImp;
 import com.github.rloic.quadinsa5if.findindandqueryingtext.service.implementation.InvertedFileMergerImpl;
 import org.apache.commons.cli.CommandLine;
@@ -31,8 +33,13 @@ import static com.github.quadinsa5if.findingandqueryingtext.util.Arguments.*;
 
 public class StandardAction {
 
-    private final InvertedFileSerializer serializer = new InvertedFileSerializerImplementation(new NaiveCompressor());
+    private final Compressor compressor = new VByteCompressor();
+    private final InvertedFileSerializer serializer = new InvertedFileSerializerImplementation(compressor);
     private final MetadataSerializer metadataSerializer = new MetadataSerializerImplementation();
+    private final SemanticEnhancer semanticEnhancer = new SemanticEnhancer(new CosinusSimilarity());
+
+    static final int BATCH_SIZE = 1000;
+    static final int CACHE_SIZE = 10;
 
     public void run(@NotNull CommandLine cl) {
 
@@ -43,11 +50,9 @@ public class StandardAction {
         final HeaderAndInvertedFile invertedFile;
         final HeaderAndInvertedFile outputFile = HeaderAndInvertedFile.autoSuffix(cl.getOptionValue(OUTPUT_FILE.full));
 
-        SemanticEnhancer semanticEnhancer = new SemanticEnhancer(new CosinusSimilarity());
-
         if (mustBuildInvertedFile) {
             final Pair<HeaderAndInvertedFile, RandomIndexerImplementation> resultAfterBuilding =
-                    buildInvertedFile(dataSetFolder, outputFile, 1000)
+                    buildInvertedFile(dataSetFolder, outputFile, BATCH_SIZE)
                     .attempt()
                     .expect("Something did wrong when building the inverted files");
             invertedFile = resultAfterBuilding.first;
@@ -64,8 +69,8 @@ public class StandardAction {
         final RandomAccessFile postingListFile = readFileRandom(invertedFile.invertedFile)
                 .expect("Cannot read posting list file " + invertedFile.invertedFile);
 
-        Vocabulary voc = new InDiskVocabularyImpl(headerFile, postingListFile, 10);
-        QuerySolver querySolver = new FaginSolverImp();
+        Vocabulary voc = new InDiskVocabularyImpl(serializer, headerFile, postingListFile, CACHE_SIZE);
+        QuerySolver querySolver = new NaiveSolverImpl();
 
         final Pair<Integer, String[]> parsedArguments = parseQueryArguments(cl)
                 .expect("Invalid query arguments, the arguments must be like k:T1:T2:...:Tn where k is an int and T1...Tn the terms");
@@ -89,7 +94,7 @@ public class StandardAction {
 
     }
 
-    public IO<Pair<HeaderAndInvertedFile, RandomIndexerImplementation>> buildInvertedFile(
+    IO<Pair<HeaderAndInvertedFile, RandomIndexerImplementation>> buildInvertedFile(
             File dataSetFolder,
             HeaderAndInvertedFile outputFile,
             int batchSize

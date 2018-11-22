@@ -1,10 +1,7 @@
 package com.github.quadinsa5if.findingandqueryingtext.util;
 
-import com.github.quadinsa5if.findingandqueryingtext.lang.IO;
 import com.github.quadinsa5if.findingandqueryingtext.lang.Iter;
-import com.github.quadinsa5if.findingandqueryingtext.model.Entry;
 
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -13,14 +10,12 @@ import static java.lang.Math.pow;
 
 public class VByteCompressor extends Compressor {
 
-    public VByteCompressor() {
-        this.separator = false;
-    }
+    public VByteCompressor() {}
 
     @Override
     public Integer decode(Iter<Byte> msg) {
         int sum = 0;
-        List<Integer> vbInt = new ArrayList<Integer>();
+        List<Integer> vbInt = new ArrayList<>();
         Optional<Byte> current = msg.next();
 
         while (current.isPresent()) {
@@ -69,77 +64,6 @@ public class VByteCompressor extends Compressor {
             }
         };
 
-    }
-
-    public IO<List<Entry>> getEntries(RandomAccessFile reader, int postingListOffset, int postingListLength) {
-        return () -> {
-            List<Entry> entries = new ArrayList<>();
-            List<Byte> encodedBytes = new ArrayList<>();
-            reader.seek(postingListOffset);
-            byte[] bytes = new byte[postingListLength];
-            reader.read(bytes);
-
-            String id = "";
-            boolean scorePart = false;
-            boolean digitChecked = false;
-            for (byte b : bytes) {
-                if (!scorePart) {
-                    int it = (int) b & 0xFF;
-                    encodedBytes.add(b);
-                    if(it >= 128){
-                        int idInt = this.decode(new Iter<Byte>() {
-                            int i = 0;
-                            @Override
-                            public Optional<Byte> next() {
-                                if (i == encodedBytes.size()) {
-                                    return Optional.empty();
-                                } else {
-                                    return Optional.of(encodedBytes.get(i++));
-                                }
-                            }
-                        });
-                        id = String.valueOf(idInt);
-                        encodedBytes.clear();
-                        scorePart = true;
-                    }
-                } else {
-                    if(digitChecked){
-                        int it = (int) b & 0xFF;
-                        encodedBytes.add(b);
-                        if(it >= 128){
-                            int score = this.decode(new Iter<Byte>() {
-                                int i = 0;
-                                @Override
-                                public Optional<Byte> next() {
-                                    if (i == encodedBytes.size()) {
-                                        return Optional.empty();
-                                    } else {
-                                        return Optional.of(encodedBytes.get(i++));
-                                    }
-                                }
-                            });
-                            entries.add(new Entry(Integer.valueOf(id), Float.valueOf("0." + String.valueOf(score))));
-                            encodedBytes.clear();
-                            scorePart = false;
-                            digitChecked = false;
-                        }
-                    }
-                    else if (b == (byte) '.' ) digitChecked = true;
-                    else if(b == (byte) '1'){
-                        entries.add(new Entry(Integer.valueOf(id), 1f));
-                        digitChecked = false;
-                        scorePart = false;
-                    }
-                    else if(b == (byte) '0'){
-                        entries.add(new Entry(Integer.valueOf(id), 0f));
-                        digitChecked = false;
-                        scorePart = false;
-                    }
-
-                }
-            }
-            return entries;
-        };
     }
 
 }

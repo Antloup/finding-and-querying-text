@@ -22,7 +22,6 @@ class InvertedFileMergerImpl(
 
             val headerWriter = Files.newBufferedWriter(outputFiles.headerFile.toPath())
             val postingListWriter = DataOutputStream(FileOutputStream(outputFiles.invertedFile))
-//            val postingListWriter = Files.newBufferedWriter(outputFiles.invertedFile.toPath())
 
             val headers = mutableListOf<MutableList<Pair<String, ReversedIndexIdentifier>>>()
             val invertedFiles = mutableListOf<RandomAccessFile>()
