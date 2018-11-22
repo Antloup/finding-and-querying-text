@@ -33,7 +33,7 @@ import static com.github.quadinsa5if.findingandqueryingtext.util.Arguments.*;
 
 public class StandardAction {
 
-    private final Compressor compressor = new VByteCompressor();
+    private final Compressor compressor = new NaiveCompressor();
     private final InvertedFileSerializer serializer = new InvertedFileSerializerImplementation(compressor);
     private final MetadataSerializer metadataSerializer = new MetadataSerializerImplementation();
     private final SemanticEnhancer semanticEnhancer = new SemanticEnhancer(new CosinusSimilarity());

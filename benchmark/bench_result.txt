@@ -1,6 +1,36 @@
 Function: build inverted index for 1 iterations
-With parameter batch size = 100, 	mean runtime = 223335,0000 ms, mean heap usage = 3,7 GB
-With parameter batch size = 1000, 	mean runtime = 185121,0000 ms, mean heap usage = 3,9 GB
-With parameter batch size = 10000, 	mean runtime = 166129,0000 ms, mean heap usage = 4,2 GB
-With parameter batch size = 100000, 	mean runtime = 179524,0000 ms, mean heap usage = 4,4 GB
+With parameter batch size = 100, 	mean runtime = 609069,0000 ms
+With parameter batch size = 1000, 	mean runtime = 357175,0000 ms
+With parameter batch size = 10000, 	mean runtime = 288966,0000 ms
+With parameter batch size = 100000, 	mean runtime = 321523,0000 ms
+---------------------------------------
+Function: naive solver for 10 iterations
+With parameter terms = [Ljava.lang.String;@64c64813, 	mean runtime = 01000 ms
+With parameter terms = [Ljava.lang.String;@3ecf72fd, 	mean runtime = 101,9000 ms
+With parameter terms = [Ljava.lang.String;@483bf400, 	mean runtime = 107,7000 ms
+With parameter terms = [Ljava.lang.String;@21a06946, 	mean runtime = 118,4000 ms
+With parameter terms = [Ljava.lang.String;@77f03bb1, 	mean runtime = 115,2000 ms
+With parameter terms = [Ljava.lang.String;@326de728, 	mean runtime = 127,9000 ms
+---------------------------------------
+Function: fagin solver for 10 iterations
+With parameter terms = [Ljava.lang.String;@64c64813, 	mean runtime = 139,7000 ms
+With parameter terms = [Ljava.lang.String;@3ecf72fd, 	mean runtime = 115,4000 ms
+With parameter terms = [Ljava.lang.String;@483bf400, 	mean runtime = 510,2000 ms
+With parameter terms = [Ljava.lang.String;@21a06946, 	mean runtime = 2327,0000 ms
+With parameter terms = [Ljava.lang.String;@77f03bb1, 	mean runtime = 3405,1000 ms
+With parameter terms = [Ljava.lang.String;@326de728, 	mean runtime = 6998,8000 ms
+---------------------------------------
+Function: naive solver for 100 iterations
+With parameter k = 2, 	mean runtime = 104,5400 ms
+With parameter k = 4, 	mean runtime = 102,2100 ms
+With parameter k = 8, 	mean runtime = 103,0200 ms
+With parameter k = 16, 	mean runtime = 106,9600 ms
+With parameter k = 32, 	mean runtime = 101,7000 ms
+---------------------------------------
+Function: fagin solver for 100 iterations
+With parameter k = 2, 	mean runtime = 108,6000 ms
+With parameter k = 4, 	mean runtime = 110,3700 ms
+With parameter k = 8, 	mean runtime = 108,2800 ms
+With parameter k = 16, 	mean runtime = 108,3100 ms
+With parameter k = 32, 	mean runtime = 112,7200 ms
 ---------------------------------------

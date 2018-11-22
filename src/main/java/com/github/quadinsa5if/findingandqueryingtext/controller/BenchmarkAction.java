@@ -41,27 +41,6 @@ public class BenchmarkAction {
         final List<Integer> batchSizes = Arrays.asList(100, 1_000, 10_000, 100_000);
 
         benchmark.bench(
-                "build inverted index with vByteCompression",
-                "batch size",
-                batchSizes,
-                1,
-                batchSize -> {
-                    InvertedFileSerializer serializer = new InvertedFileSerializerImplementation(new VByteCompressor());
-                    ScorerImplementation scorerVisitor = new ScorerImplementation(serializer, batchSize);
-                    MetadataImplementation metadataVisitor = new MetadataImplementation(metadataSerializer);
-                    RandomIndexerImplementation randomIndexerVisitor = new RandomIndexerImplementation();
-
-                    DocumentParser parser = new DocumentParser(Arrays.asList(scorerVisitor, metadataVisitor, randomIndexerVisitor));
-                    parser.parse(benchDataSetFolder.listFiles());
-
-                    List<HeaderAndInvertedFile> partitions = scorerVisitor.getPartitions();
-                    final InvertedFileMerger merger = new InvertedFileMergerImpl(serializer);
-                    merger.merge(partitions, benchInvertedFile).map(hfFile -> new Pair(hfFile, randomIndexerVisitor)).attempt();
-                    return Unit.INSTANCE;
-                }
-        );
-
-        benchmark.bench(
                 "build inverted index",
                 "batch size",
                 batchSizes,
